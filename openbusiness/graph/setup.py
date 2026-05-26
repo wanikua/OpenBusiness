@@ -1,94 +1,81 @@
-"""LangGraph pipeline setup — wires all agents into a StateGraph.
+"""LangGraph pipeline — evidence-driven, linear, no debate.
 
-Pipeline flow:
-  1. [Parallel] 4 Analysts → produce domain reports
-  2. [Loop]     Optimist ↔ Pessimist debate (N rounds)
-  3.            Research Director → judgment
-  4.            Strategy Director → final BMC report
+Flow:
+  evidence_collector
+   → jtbd → value_prop → gtm → unit_econ → moat
+   → synthesizer (BMC)
+   → stress_tester (assumption audit)
+   → finalizer (user-facing report)
 """
 
 from __future__ import annotations
 
 from langgraph.graph import END, StateGraph
 
-from openbusiness.agents.analysts.competitive_analyst import create_competitive_analyst
-from openbusiness.agents.analysts.financial_analyst import create_financial_analyst
-from openbusiness.agents.analysts.product_analyst import create_product_analyst
-from openbusiness.agents.analysts.traffic_analyst import create_traffic_analyst
-from openbusiness.agents.managers.research_director import create_research_director
-from openbusiness.agents.managers.strategy_director import create_strategy_director
-from openbusiness.agents.researchers.optimist import create_optimist_researcher
-from openbusiness.agents.researchers.pessimist import create_pessimist_researcher
+from openbusiness.agents.analysts import (
+    create_evidence_collector,
+    create_finalizer,
+    create_gtm_analyst,
+    create_jtbd_analyst,
+    create_moat_analyst,
+    create_stress_tester,
+    create_synthesizer,
+    create_unit_econ_analyst,
+    create_value_prop_analyst,
+)
 from openbusiness.agents.utils.agent_state import AgentState
-from openbusiness.graph.conditional_logic import should_continue_debate
 from openbusiness.llm_clients.factory import get_llm
 
 
-def build_graph(debate_rounds: int = 2):
-    """Construct and compile the full analysis pipeline.
+PIPELINE_STAGES = [
+    ("evidence_collector", "🔍 Evidence Collector"),
+    ("jtbd_analyst", "👥 Customer / JTBD Analyst"),
+    ("value_prop_analyst", "💎 Value Proposition Analyst"),
+    ("gtm_analyst", "🚀 Go-To-Market Analyst"),
+    ("unit_econ_analyst", "💰 Unit Economics Analyst"),
+    ("moat_analyst", "🛡️ Moat & Competition Analyst"),
+    ("synthesizer", "🧱 Business Model Synthesizer"),
+    ("stress_tester", "🔬 Assumption Stress Tester"),
+    ("finalizer", "📝 Report Finalizer"),
+]
 
-    Args:
-        debate_rounds: Number of bull/bear debate rounds.
 
-    Returns:
-        A compiled LangGraph that can be invoked with an AgentState dict.
-    """
-    quick_llm = get_llm("quick")
-    deep_llm = get_llm("deep")
+def build_graph():
+    """Compile the linear evidence-driven pipeline."""
+    quick_llm = get_llm("quick")  # for analysts
+    deep_llm = get_llm("deep")    # for synthesizer + stress tester + finalizer
 
-    # ── Create agent nodes ───────────────────────────────────────
-    traffic_node, _ = create_traffic_analyst(quick_llm)
-    financial_node, _ = create_financial_analyst(quick_llm)
-    competitive_node, _ = create_competitive_analyst(quick_llm)
-    product_node, _ = create_product_analyst(quick_llm)
+    evidence_node, _ = create_evidence_collector(quick_llm)
+    jtbd_node = create_jtbd_analyst(quick_llm)
+    value_node = create_value_prop_analyst(quick_llm)
+    gtm_node = create_gtm_analyst(quick_llm)
+    unit_node, _ = create_unit_econ_analyst(quick_llm)
+    moat_node = create_moat_analyst(quick_llm)
+    synth_node = create_synthesizer(deep_llm)
+    stress_node = create_stress_tester(deep_llm)
+    final_node = create_finalizer(deep_llm)
 
-    optimist_node = create_optimist_researcher(quick_llm)
-    pessimist_node = create_pessimist_researcher(quick_llm)
-
-    research_director_node = create_research_director(deep_llm)
-    strategy_director_node = create_strategy_director(deep_llm)
-
-    # ── Build the graph ──────────────────────────────────────────
     graph = StateGraph(AgentState)
 
-    # Phase 1: Analysts (sequential — each writes to its own state field)
-    graph.add_node("traffic_analyst", traffic_node)
-    graph.add_node("financial_analyst", financial_node)
-    graph.add_node("competitive_analyst", competitive_node)
-    graph.add_node("product_analyst", product_node)
+    graph.add_node("evidence_collector", evidence_node)
+    graph.add_node("jtbd_analyst", jtbd_node)
+    graph.add_node("value_prop_analyst", value_node)
+    graph.add_node("gtm_analyst", gtm_node)
+    graph.add_node("unit_econ_analyst", unit_node)
+    graph.add_node("moat_analyst", moat_node)
+    graph.add_node("synthesizer", synth_node)
+    graph.add_node("stress_tester", stress_node)
+    graph.add_node("finalizer", final_node)
 
-    # Phase 2: Bull/Bear debate
-    graph.add_node("optimist", optimist_node)
-    graph.add_node("pessimist", pessimist_node)
-
-    # Phase 3: Managers
-    graph.add_node("research_director", research_director_node)
-    graph.add_node("strategy_director", strategy_director_node)
-
-    # ── Wire edges ───────────────────────────────────────────────
-
-    # Analysts run sequentially (each reads only its own input, writes its own field)
-    graph.set_entry_point("traffic_analyst")
-    graph.add_edge("traffic_analyst", "financial_analyst")
-    graph.add_edge("financial_analyst", "competitive_analyst")
-    graph.add_edge("competitive_analyst", "product_analyst")
-
-    # After all analysts → start debate
-    graph.add_edge("product_analyst", "optimist")
-
-    # Debate loop: optimist → pessimist → check round count
-    graph.add_edge("optimist", "pessimist")
-    graph.add_conditional_edges(
-        "pessimist",
-        should_continue_debate,
-        {
-            "continue_debate": "optimist",
-            "end_debate": "research_director",
-        },
-    )
-
-    # Managers: research director → strategy director → END
-    graph.add_edge("research_director", "strategy_director")
-    graph.add_edge("strategy_director", END)
+    graph.set_entry_point("evidence_collector")
+    graph.add_edge("evidence_collector", "jtbd_analyst")
+    graph.add_edge("jtbd_analyst", "value_prop_analyst")
+    graph.add_edge("value_prop_analyst", "gtm_analyst")
+    graph.add_edge("gtm_analyst", "unit_econ_analyst")
+    graph.add_edge("unit_econ_analyst", "moat_analyst")
+    graph.add_edge("moat_analyst", "synthesizer")
+    graph.add_edge("synthesizer", "stress_tester")
+    graph.add_edge("stress_tester", "finalizer")
+    graph.add_edge("finalizer", END)
 
     return graph.compile()

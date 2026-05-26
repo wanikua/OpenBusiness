@@ -1,7 +1,7 @@
 [project]
 name = "openbusiness"
 version = "0.1.0"
-description = "AI-driven multi-agent business model analysis & reverse engineering"
+description = "AI-driven multi-agent business model reverse engineering"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
@@ -10,11 +10,10 @@ dependencies = [
     "langchain>=0.3.0",
     "langchain-openai>=0.3.0",
     "langchain-anthropic>=0.3.0",
-    "yfinance>=0.2.40",
     "requests>=2.31.0",
     "pydantic>=2.0",
-    "python-dotenv>=1.0.0",
     "rich>=13.0.0",
+    "tomli>=2.0; python_version < '3.11'",
 ]
 
 [project.optional-dependencies]

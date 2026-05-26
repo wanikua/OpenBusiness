@@ -1,7 +1,7 @@
-"""Shared state bus for the multi-agent pipeline.
+"""Shared state bus for the evidence-driven business model reconstruction pipeline.
 
-All agents read from and write to this TypedDict.
-Downstream agents consume upstream reports — agents never message each other directly.
+Reports must label every finding with: [VERIFIED:url] (cited), [INFERRED] (LLM deduction),
+or [MISSING] (data gap). The Synthesizer separates these in the final report.
 """
 
 from __future__ import annotations
@@ -13,27 +13,23 @@ from typing_extensions import TypedDict
 
 
 class AgentState(TypedDict):
-    """Central state that flows through the entire LangGraph pipeline."""
+    """Linear evidence pipeline. No debate. No judgment loop."""
 
-    # ── User input ───────────────────────────────────────────────
     company_name: str
     domain: str
-    ticker: str  # empty string if private company
+    ticker: str
 
-    # ── Analyst reports (written by analyst nodes) ───────────────
-    traffic_report: str
-    financial_report: str
-    competitive_report: str
-    product_report: str
+    evidence_pack: str        # Markdown bundle: pricing, filings, news, scraped snippets
 
-    # ── Researcher debate (optimist vs pessimist) ────────────────
-    optimist_argument: str
-    pessimist_argument: str
-    debate_round: int
+    jtbd_report: str          # Customer & Jobs-to-be-Done
+    value_prop_report: str    # Value Proposition
+    gtm_report: str           # Go-To-Market / Channels
+    unit_econ_report: str     # Unit Economics
+    moat_report: str          # Moat & Competition
 
-    # ── Manager synthesis ────────────────────────────────────────
-    research_verdict: str  # research director's judgment
-    final_report: str      # strategy director's BMC + insights
+    canvas_report: str        # Business Model Canvas synthesis
+    stress_test_report: str   # Assumption stress test
 
-    # ── Scratch-pad messages for tool-calling agents ─────────────
+    final_report: str
+
     messages: Annotated[list, add_messages]
