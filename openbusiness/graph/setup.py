@@ -40,10 +40,11 @@ PIPELINE_STAGES = [
 ]
 
 
-def build_graph():
+def build_graph(analysis_depth: str = "standard"):
     """Compile the linear evidence-driven pipeline."""
     quick_llm = get_llm("quick")  # for analysts
-    deep_llm = get_llm("deep")    # for synthesizer + stress tester + finalizer
+    deep_llm = get_llm("deep")    # for synthesis and deep-mode final reasoning
+    final_llm = deep_llm if analysis_depth == "deep" else quick_llm
 
     evidence_node, _ = create_evidence_collector(quick_llm)
     jtbd_node = create_jtbd_analyst(quick_llm)
@@ -52,8 +53,8 @@ def build_graph():
     unit_node, _ = create_unit_econ_analyst(quick_llm)
     moat_node = create_moat_analyst(quick_llm)
     synth_node = create_synthesizer(deep_llm)
-    stress_node = create_stress_tester(deep_llm)
-    final_node = create_finalizer(deep_llm)
+    stress_node = create_stress_tester(final_llm)
+    final_node = create_finalizer(final_llm)
 
     graph = StateGraph(AgentState)
 

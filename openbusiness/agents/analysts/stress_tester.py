@@ -25,27 +25,18 @@ SYSTEM_PROMPT = """\
 1. **可证伪性**：什么证据能否定这个假设？(用户访谈 / 财报数据 / 竞品动作)
 2. **失效后果**：如果假设错了，画布哪一格会塌？(典型连锁反应：CAC 假设错 → LTV/CAC 翻车 → 整个 GTM 崩)
 3. **优先级**：High (画布塌) / Medium (一格塌) / Low (微调即可)
+4. **先行指标**：哪些早期信号会提前暴露这个假设正在失效？
 
 对每个 [MISSING] 数据缺口，问：
 1. **获取难度**：能否通过额外搜索 / 访谈 / 财报附注补上？
 2. **结论敏感度**：这个数据补上后，主要结论是否会反转？
 
+# Scenario Reversal
+必须给出一个"结论反转表"：列出在什么数据范围下，当前商业模式判断会从 Robust/Plausible
+降级为 Fragile/Speculative。例如 CAC 上升、流失率上升、毛利下降、渠道转化下降、竞品降价。
+
 # Output
-
-## 🔬 High-Priority Assumptions (Failure Breaks The Canvas)
-- Assumption A: [text]
-  - Falsification condition: ...
-  - Failure chain: ...
-  - Priority: High
-
-## ⚠️ Medium-Priority Assumptions
-- ...
-
-## 🕳️ Critical Data Gaps
-- ...
-
-## 💡 One-Line Verdict
-[Give a one-sentence confidence verdict on the business model: Robust / Plausible / Fragile / Speculative]
+Markdown。优先输出最可能改变结论的假设，不要平均用力。
 """
 
 

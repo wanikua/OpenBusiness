@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820" role="img" aria-labelledby="title desc">
+  <title id="title">OpenBusiness report preview</title>
+  <desc id="desc">A clean report preview showing a business model canvas, evidence labels, and next steps.</desc>
+  <defs>
+    <filter id="shadow" x="-12%" y="-12%" width="124%" height="124%">
+      <feDropShadow dx="0" dy="20" stdDeviation="22" flood-color="#1f2937" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="820" fill="#eef3f8"/>
+  <rect x="66" y="52" width="1068" height="716" rx="16" fill="#ffffff" filter="url(#shadow)"/>
+  <rect x="66" y="52" width="1068" height="64" rx="16" fill="#f8fafc"/>
+  <rect x="66" y="100" width="1068" height="16" fill="#f8fafc"/>
+  <circle cx="101" cy="84" r="8" fill="#ef4444"/>
+  <circle cx="127" cy="84" r="8" fill="#f59e0b"/>
+  <circle cx="153" cy="84" r="8" fill="#22c55e"/>
+  <text x="206" y="90" fill="#64748b" font-family="Inter, Arial, sans-serif" font-size="15">output/notion_business_model.md</text>
+
+  <text x="108" y="158" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700">OpenBusiness Business Model Reverse Engineering Report</text>
+  <text x="108" y="194" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="17">Target: Notion | Confidence: Plausible | Source labels preserved</text>
+
+  <g font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700">
+    <rect x="108" y="220" width="130" height="32" rx="16" fill="#dcfce7"/>
+    <text x="128" y="241" fill="#166534">VERIFIED</text>
+    <rect x="252" y="220" width="124" height="32" rx="16" fill="#fef3c7"/>
+    <text x="274" y="241" fill="#92400e">INFERRED</text>
+    <rect x="390" y="220" width="112" height="32" rx="16" fill="#fee2e2"/>
+    <text x="414" y="241" fill="#991b1b">MISSING</text>
+  </g>
+
+  <text x="108" y="300" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">1. Business Model Canvas</text>
+  <rect x="108" y="322" width="984" height="210" rx="10" fill="#ffffff" stroke="#d7dee8"/>
+  <rect x="108" y="322" width="984" height="44" rx="10" fill="#f1f5f9"/>
+  <rect x="108" y="354" width="984" height="12" fill="#f1f5f9"/>
+
+  <g font-family="Inter, Arial, sans-serif" font-size="14">
+    <text x="128" y="350" fill="#334155" font-weight="700">Key Partners</text>
+    <text x="322" y="350" fill="#334155" font-weight="700">Key Activities</text>
+    <text x="516" y="350" fill="#334155" font-weight="700">Value Propositions</text>
+    <text x="732" y="350" fill="#334155" font-weight="700">Relationships</text>
+    <text x="918" y="350" fill="#334155" font-weight="700">Segments</text>
+
+    <line x1="302" y1="322" x2="302" y2="532" stroke="#e2e8f0"/>
+    <line x1="496" y1="322" x2="496" y2="532" stroke="#e2e8f0"/>
+    <line x1="712" y1="322" x2="712" y2="532" stroke="#e2e8f0"/>
+    <line x1="896" y1="322" x2="896" y2="532" stroke="#e2e8f0"/>
+    <line x1="108" y1="366" x2="1092" y2="366" stroke="#e2e8f0"/>
+    <line x1="108" y1="450" x2="1092" y2="450" stroke="#e2e8f0"/>
+
+    <text x="128" y="396" fill="#0f172a">Cloud hosting</text>
+    <text x="128" y="419" fill="#64748b">and integrations</text>
+    <text x="128" y="484" fill="#92400e">[INFERRED]</text>
+
+    <text x="322" y="396" fill="#0f172a">Workspace product</text>
+    <text x="322" y="419" fill="#64748b">development</text>
+    <text x="322" y="484" fill="#166534">[VERIFIED:notion.so]</text>
+
+    <text x="516" y="396" fill="#0f172a">All-in-one notes,</text>
+    <text x="516" y="419" fill="#64748b">docs, wiki, projects</text>
+    <text x="516" y="484" fill="#166534">[VERIFIED:notion.so]</text>
+
+    <text x="732" y="396" fill="#0f172a">Self-serve PLG</text>
+    <text x="732" y="419" fill="#64748b">plus enterprise sales</text>
+    <text x="732" y="484" fill="#92400e">[INFERRED]</text>
+
+    <text x="918" y="396" fill="#0f172a">Teams, startups,</text>
+    <text x="918" y="419" fill="#64748b">creators, enterprises</text>
+    <text x="918" y="484" fill="#166534">[VERIFIED:notion.so]</text>
+  </g>
+
+  <text x="108" y="586" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">2. Key Fact Layers</text>
+  <g font-family="Inter, Arial, sans-serif">
+    <rect x="108" y="608" width="310" height="104" rx="10" fill="#f0fdf4" stroke="#bbf7d0"/>
+    <text x="132" y="640" fill="#166534" font-size="16" font-weight="700">Verified facts</text>
+    <text x="132" y="670" fill="#334155" font-size="14">Pricing tiers and product pages</text>
+    <text x="132" y="694" fill="#64748b" font-size="13">Source-backed evidence</text>
+
+    <rect x="446" y="608" width="310" height="104" rx="10" fill="#fffbeb" stroke="#fde68a"/>
+    <text x="470" y="640" fill="#92400e" font-size="16" font-weight="700">Inferred assumptions</text>
+    <text x="470" y="670" fill="#334155" font-size="14">PLG expansion and adoption loops</text>
+    <text x="470" y="694" fill="#64748b" font-size="13">Requires validation</text>
+
+    <rect x="782" y="608" width="310" height="104" rx="10" fill="#fff1f2" stroke="#fecdd3"/>
+    <text x="806" y="640" fill="#991b1b" font-size="16" font-weight="700">Missing data</text>
+    <text x="806" y="670" fill="#334155" font-size="14">CAC, retention, gross margin</text>
+    <text x="806" y="694" fill="#64748b" font-size="13">Confidence impact is explicit</text>
+  </g>
+</svg>

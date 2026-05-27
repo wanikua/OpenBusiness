@@ -23,6 +23,7 @@ from openbusiness.llm_clients import config
 
 console = Console()
 LLM_PROVIDERS = ("openai", "anthropic", "deepseek")
+ANALYSIS_DEPTHS = ("standard", "deep")
 
 
 def _show_current_config() -> bool:
@@ -135,6 +136,7 @@ def run_analysis(
     ticker: str,
     output_dir: str,
     output_language: str | None = None,
+    analysis_depth: str = "standard",
 ) -> None:
     """Run the pipeline against a target company."""
     from openbusiness.graph.setup import PIPELINE_STAGES, build_graph
@@ -144,25 +146,30 @@ def run_analysis(
     except ValueError as exc:
         console.print(f"[red]{exc}[/]")
         sys.exit(2)
+    if analysis_depth not in ANALYSIS_DEPTHS:
+        console.print(f"[red]Unsupported analysis depth: {analysis_depth!r}[/]")
+        sys.exit(2)
 
     console.print(
         Panel.fit(
             f"[bold cyan]OpenBusiness[/] v0.1.0\n"
             f"{ui_text(language, 'target')}: [bold]{company}[/] "
             f"({domain or ui_text(language, 'no_domain')})" + (f" [{ticker}]" if ticker else "")
-            + f"\n{ui_text(language, 'output_language')}: [bold]{output_language_name(language)}[/]",
+            + f"\n{ui_text(language, 'output_language')}: [bold]{output_language_name(language)}[/]"
+            + f"\nAnalysis depth: [bold]{analysis_depth}[/]",
             title=f"🚀 {ui_text(language, 'analysis_title')}",
             border_style="cyan",
         )
     )
 
-    graph = build_graph()
+    graph = build_graph(analysis_depth)
 
     initial_state = {
         "company_name": company,
         "domain": domain or f"{company.lower().replace(' ', '')}.com",
         "ticker": ticker,
         "output_language": language,
+        "analysis_depth": analysis_depth,
         "evidence_pack": "",
         "jtbd_report": "",
         "value_prop_report": "",
@@ -255,6 +262,12 @@ def main() -> None:
         default=None,
         help="报告输出语言: zh 或 en (覆盖配置与环境变量)",
     )
+    p_analyze.add_argument(
+        "--depth",
+        choices=list(ANALYSIS_DEPTHS),
+        default="standard",
+        help="分析深度: standard 更快，deep 会增加证据采集范围和搜索深度",
+    )
 
     args = parser.parse_args()
 
@@ -286,7 +299,7 @@ def main() -> None:
                     sys.exit(1)
             else:
                 sys.exit(1)
-        run_analysis(args.company, args.domain, args.ticker, args.output, args.language)
+        run_analysis(args.company, args.domain, args.ticker, args.output, args.language, args.depth)
         return
 
     parser.print_help()
