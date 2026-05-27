@@ -12,13 +12,13 @@ verified, inferred, or missing.
 
 OpenBusiness is also a co-building project. The community can help by sharing
 hard company-analysis examples, improving analyst prompts, adding evidence
-sources, testing providers, and turning shallow outputs into better reasoning
-patterns.
+sources, contributing analysis packs or report templates, testing providers,
+and turning shallow outputs into better reasoning patterns.
 
 ## One-Liner
 
 OpenBusiness turns a company name into an evidence-labeled business model
-analysis report.
+analysis report with reusable domain packs and reader templates.
 
 ## Short Description
 
@@ -108,6 +108,7 @@ workflows.
 Useful help:
 - test it on companies you know well
 - share examples where the reasoning is shallow or wrong
+- contribute domain packs or report templates
 - add better evidence sources
 - improve bilingual output
 - contribute prompts, tools, or docs

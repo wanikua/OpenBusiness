@@ -1,0 +1,17 @@
+id = "ai-infra"
+name = "AI Infrastructure"
+description = "Analysis pack for AI infrastructure, developer tools, model platforms, data tooling, and agent infrastructure."
+
+evidence_focus = [
+  "Developer docs, API references, SDKs, model/provider compatibility, benchmarks, and pricing units.",
+  "GitHub activity, integrations, open-source dependencies, ecosystem partners, and cloud marketplace listings.",
+  "Enterprise trust evidence: security, compliance, SLAs, deployment model, and procurement signals.",
+  "Funding, compute cost exposure, gross margin pressure, usage-based revenue, and platform dependency.",
+]
+
+analyst_focus = [
+  "Distinguish developer adoption from economic buyer commitment.",
+  "Test whether usage growth creates durable lock-in or only variable infrastructure cost.",
+  "Analyze platform dependency on model providers, clouds, open-source projects, and changing standards.",
+  "Separate technical differentiation from distribution, trust, ecosystem, and switching-cost advantages.",
+]

@@ -5,6 +5,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from openbusiness.agents.utils.agent_state import AgentState
+from openbusiness.agents.utils.prompt_context import with_analysis_context
 from openbusiness.tools.evidence_tools import (
     firecrawl_scrape,
     sec_edgar_company_facts,
@@ -76,10 +77,13 @@ def create_evidence_collector(llm):
             agent_llm,
             [
                 SystemMessage(
-                    content=with_output_language(
-                        SYSTEM_PROMPT,
-                        state.get("output_language"),
-                        "evidence_collector",
+                    content=with_analysis_context(
+                        with_output_language(
+                            SYSTEM_PROMPT,
+                            state.get("output_language"),
+                            "evidence_collector",
+                        ),
+                        state,
                     )
                 ),
                 HumanMessage(

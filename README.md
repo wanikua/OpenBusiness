@@ -28,7 +28,14 @@ buy/sell vote.
 
 - Multi-agent business analysis pipeline built with LangGraph.
 - Evidence collection through Tavily search, Firecrawl scraping, and SEC EDGAR.
-- Business model canvas output with explicit evidence labels.
+- Business model canvas output with explicit evidence labels: known, inferred,
+  or missing.
+- Domain analysis packs for SaaS, public companies, ecommerce, AI
+  infrastructure, consumer apps, and general company research.
+- Audience templates for standard analysis, investor memos, founder copycat
+  studies, and competitor maps.
+- Reproducible run artifacts with stage outputs, source extraction, and run
+  metadata.
 - Bilingual report generation with `--language en` and `--language zh`.
 - Provider support for OpenAI, Anthropic, and DeepSeek.
 - Local config wizard with hidden API-key input and `0600` config permissions.
@@ -87,13 +94,24 @@ OpenBusiness writes a final Markdown report with this shape:
 ## 4. Next Steps
 ```
 
-Evidence labels are intentionally visible:
+## Evidence Discipline
+
+The central product principle is simple: know what is known, infer only when the
+evidence supports it, and mark the unknown instead of hiding it.
+
+Evidence labels are intentionally visible and treated as part of the report
+contract:
 
 | Label | Meaning |
 | --- | --- |
 | `[VERIFIED:url]` | The claim is supported by a source. |
 | `[INFERRED]` | The claim is a reasoned inference from available context. |
 | `[MISSING]` | The missing data materially affects confidence. |
+
+This is a feature, not a formatting detail. OpenBusiness keeps these labels
+through collection, analysis, synthesis, stress testing, and finalization.
+Analysis packs and report templates can change the lens of the analysis, but
+they must not remove or soften the evidence labels.
 
 ## Quick Start
 
@@ -173,6 +191,8 @@ openbusiness config --reset
 openbusiness config --language en
 openbusiness config --ui-language en
 openbusiness show
+openbusiness packs
+openbusiness templates
 
 openbusiness analyze "Notion" --domain notion.so
 openbusiness analyze "Costco" --ticker COST
@@ -181,6 +201,7 @@ openbusiness analyze "Notion" --domain notion.so --language en
 openbusiness analyze "Notion" --domain notion.so --language zh
 openbusiness analyze "Notion" --domain notion.so --ui-language en --language zh
 openbusiness analyze "Notion" --domain notion.so --depth deep
+openbusiness analyze "Vercel" --domain vercel.com --pack saas --template investor-memo
 ```
 
 Analysis options:
@@ -193,6 +214,10 @@ Analysis options:
 | `--language`, `-l` | Report language for this run. Supports `en` and `zh`. |
 | `--ui-language` | Terminal interface language for this run. If `--language` is omitted, the report follows the resolved interface language by default. |
 | `--depth` | Research depth. Use `standard` for faster runs or `deep` for broader evidence collection. |
+| `--pack` | Built-in analysis pack id. Run `openbusiness packs` to list options. |
+| `--pack-file` | Custom analysis pack TOML file. |
+| `--template` | Built-in report template id. Run `openbusiness templates` to list options. |
+| `--template-file` | Custom report template Markdown file with TOML front matter. |
 
 `openbusiness analyze` does not ask for language choices at startup. The
 terminal UI language comes from install/config, and the report language follows
@@ -232,6 +257,75 @@ Report language precedence:
 2. `OPENBUSINESS_OUTPUT_LANGUAGE=en`
 3. `output_language = "en"` in local config
 4. Resolved interface language
+
+## Analysis Packs And Templates
+
+Analysis packs make the pipeline more domain-aware without hard-coding every
+company into one generic prompt. Built-in packs include:
+
+| Pack | Use it for |
+| --- | --- |
+| `general` | Default company research when the model is unclear or mixed. |
+| `saas` | Subscription software, PLG, sales-led SaaS, and B2B software. |
+| `public-company` | Listed companies where filings, segments, and margins matter. |
+| `ecommerce` | DTC, marketplace, retail commerce, and product businesses. |
+| `ai-infra` | Developer tools, model platforms, data tooling, and AI infrastructure. |
+| `consumer-app` | Consumer, prosumer, creator, media, and community products. |
+
+Report templates change the reader lens:
+
+| Template | Use it for |
+| --- | --- |
+| `standard` | General OpenBusiness report. |
+| `investor-memo` | First-pass diligence, business quality, and downside risk. |
+| `founder-copycat` | What to copy, avoid, attack, or validate as a new entrant. |
+| `competitor-map` | Alternatives, likely competitive response, and positioning. |
+
+Examples:
+
+```bash
+openbusiness packs
+openbusiness templates
+openbusiness analyze "Vercel" --domain vercel.com --pack saas --template investor-memo
+openbusiness analyze "Costco" --ticker COST --pack public-company
+```
+
+Custom packs are TOML files with `id`, `name`, `description`,
+`evidence_focus`, and `analyst_focus`. Custom templates are Markdown files with
+TOML front matter. Both are prompt guidance only: they cannot bypass evidence
+labels or turn missing data into verified facts.
+
+## Run Artifacts
+
+Each run keeps the existing portable report path:
+
+```text
+output/<company>_business_model.md
+```
+
+It also writes a reproducible artifact folder:
+
+```text
+output/<company>/
+├── report.<language>.md
+├── run.json
+├── evidence.json
+├── sources.md
+└── stages/
+    ├── 01_evidence.md
+    ├── 02_jtbd.md
+    ├── 03_value_prop.md
+    ├── 04_gtm.md
+    ├── 05_unit_econ.md
+    ├── 06_moat.md
+    ├── 07_canvas.md
+    ├── 08_stress_test.md
+    └── 09_final.md
+```
+
+This makes reports easier to debug, compare, and improve. If a conclusion feels
+too shallow, inspect the stage files to see whether the weakness came from
+missing evidence, weak inference, or final-report compression.
 
 ## Bilingual Output
 
@@ -299,6 +393,7 @@ Assumption Stress Tester
 Finalizer
   v
 output/<company>_business_model.md
+output/<company>/run.json + stage artifacts
 ```
 
 Core design principles:
@@ -309,6 +404,8 @@ Core design principles:
 - Tools do deterministic work: unit-economics calculations run in Python, not
   inside model prose.
 - The final output is portable Markdown.
+- Analysis packs and templates can change the lens, but the evidence-label
+  contract stays fixed.
 
 ## Providers
 
@@ -341,12 +438,20 @@ OpenBusiness/
 ├── .env.example
 ├── docs/
 │   ├── PROMOTION.md
+│   ├── EXTENDING.md
 │   └── assets/
 │       ├── openbusiness-terminal-demo.svg
 │       └── openbusiness-report-preview.svg
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 └── openbusiness/
     ├── cli.py
     ├── language.py
+    ├── profiles.py
+    ├── resources/
+    │   ├── packs/
+    │   └── templates/
     ├── agents/
     │   ├── analysts/
     │   └── utils/
@@ -361,7 +466,21 @@ OpenBusiness/
 python -m pip install -e ".[dev]"
 python -m ruff check openbusiness
 python -m compileall openbusiness
+bash -n install.sh
+python -m openbusiness.cli packs
+python -m openbusiness.cli templates
 ```
+
+Supply-chain and release hygiene:
+
+- CI installs from the checked-out package and runs lint, compile, installer
+  syntax, resource smoke tests, and the README English-only check.
+- Runtime resources are packaged through `pyproject.toml` package data instead
+  of fetched dynamically at install time.
+- Generated output, local config, API keys, and virtual environments must stay
+  out of commits.
+- README and top-level metadata stay English-only for GitHub and package-index
+  readability.
 
 ## Community
 
@@ -374,7 +493,12 @@ open-source workflow for evidence-labeled company analysis.
   company-analysis examples that expose weak reasoning.
 - Share real analysis examples that show where the pipeline is shallow, slow, or
   missing important evidence.
+- Contribute domain packs, report templates, evidence connectors, or better
+  stage prompts when you can show how they improve evidence quality or reasoning
+  depth.
 - Read [CONTRIBUTING.md](CONTRIBUTING.md) before sending a pull request.
+- Use [docs/EXTENDING.md](docs/EXTENDING.md) when adding analysis packs, report
+  templates, or evidence tools.
 - Use [docs/PROMOTION.md](docs/PROMOTION.md) for launch copy, GitHub topic
   suggestions, and community posting templates.
 - `llms.txt` is available for AI assistants, answer engines, and developer

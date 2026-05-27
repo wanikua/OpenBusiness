@@ -9,6 +9,8 @@ easier to run.
 
 - Evidence beats confident prose.
 - Clear missing data is better than fake certainty.
+- Preserve the evidence labels. Knowing, inferring, and admitting missing data
+  are separate states.
 - Practical workflows matter as much as model output quality.
 - Bilingual support should be treated as a first-class feature.
 - Good examples are valuable contributions, even when they reveal weaknesses.
@@ -17,6 +19,8 @@ easier to run.
 
 - Improve analyst prompts with clearer reasoning standards.
 - Add evidence sources or make existing tools more reliable.
+- Add an analysis pack for a specific domain.
+- Add a report template for a specific reader workflow.
 - Add provider support for more LLM APIs.
 - Improve bilingual output quality.
 - Add report examples that expose weak reasoning or missing data.
@@ -41,6 +45,8 @@ Run these before opening a pull request:
 ```bash
 python -m ruff check openbusiness
 python -m compileall openbusiness
+python -m openbusiness.cli packs
+python -m openbusiness.cli templates
 ```
 
 If your change affects installation, also run:
@@ -53,6 +59,8 @@ bash -n install.sh
 
 - Keep changes focused. Avoid mixing unrelated refactors with feature work.
 - Preserve evidence labels: `[VERIFIED:url]`, `[INFERRED]`, and `[MISSING]`.
+- Analysis packs and report templates may change the lens, but must not weaken
+  the evidence-label contract.
 - Do not commit API keys, generated reports, local config, or virtual
   environments.
 - Keep README and top-level project metadata in English.
@@ -66,6 +74,7 @@ Useful issues include:
 
 - A company analysis that produced shallow or wrong reasoning.
 - A missing data source that would materially improve evidence quality.
+- A proposed analysis pack or report template with a concrete company example.
 - A provider or model that fails to follow tool calls or language constraints.
 - Installation friction on a specific OS, shell, or Python version.
 

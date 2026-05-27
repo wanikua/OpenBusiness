@@ -1,0 +1,17 @@
+id = "saas"
+name = "SaaS"
+description = "Analysis pack for subscription software, PLG, sales-led SaaS, and horizontal or vertical B2B software."
+
+evidence_focus = [
+  "Pricing tiers, seat limits, usage limits, enterprise CTA, free trial, and product-led onboarding.",
+  "Case studies, integrations, security pages, SOC2/compliance claims, and implementation partners.",
+  "Hiring signals for AE, BDR, customer success, solutions engineering, and partner roles.",
+  "Churn, expansion, NRR, ARR, ACV, payback, gross margin, and public SaaS benchmark proxies.",
+]
+
+analyst_focus = [
+  "Distinguish buyer, admin, champion, and end user; identify whether adoption is bottom-up or top-down.",
+  "Separate PLG, sales-led, channel-led, and expansion-led growth motions.",
+  "Test whether the product has workflow lock-in, data lock-in, ecosystem lock-in, or only feature parity.",
+  "Explain whether the model is seat-based, usage-based, platform fee, services-heavy, or mixed.",
+]

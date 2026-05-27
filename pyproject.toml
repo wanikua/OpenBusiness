@@ -58,6 +58,9 @@ openbusiness = "openbusiness.cli:main"
 [tool.setuptools.packages.find]
 include = ["openbusiness*"]
 
+[tool.setuptools.package-data]
+"openbusiness.resources" = ["packs/*.toml", "templates/*.md"]
+
 [build-system]
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"

@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import argparse
 import getpass
+import json
+import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 from rich.console import Console
@@ -20,6 +23,12 @@ from openbusiness.language import (
     ui_text,
 )
 from openbusiness.llm_clients import config
+from openbusiness.profiles import (
+    list_analysis_packs,
+    list_report_templates,
+    load_analysis_pack,
+    load_report_template,
+)
 
 console = Console()
 LLM_PROVIDERS = ("openai", "anthropic", "deepseek")
@@ -130,7 +139,19 @@ CLI_HELP_TEXT = {
             "Run interface language: zh or en; overrides the saved default interface language "
             "and remains separate from report language"
         ),
+        "pack": "Analysis pack id. Run `openbusiness packs` to list built-in packs.",
+        "pack_file": "Custom analysis pack TOML file.",
+        "template": "Report template id. Run `openbusiness templates` to list built-in templates.",
+        "template_file": "Custom report template Markdown file with TOML front matter.",
         "depth": "Research depth: standard is faster; deep broadens evidence collection and search depth",
+        "packs_help": "List built-in analysis packs",
+        "templates_help": "List built-in report templates",
+        "id": "ID",
+        "name": "Name",
+        "description_column": "Description",
+        "analysis_pack": "Analysis pack",
+        "report_template": "Report template",
+        "artifacts_written": "Run artifacts:",
     },
     "zh": {
         "description": "AI 驱动的商业模式逆向工程",
@@ -146,7 +167,19 @@ CLI_HELP_TEXT = {
         "output": "报告输出目录",
         "analyze_language": "报告输出语言: zh 或 en (覆盖配置与环境变量)",
         "analyze_ui_language": "运行界面语言: zh 或 en；覆盖已保存的默认界面语言，与报告输出语言分开",
+        "pack": "分析包 ID。运行 `openbusiness packs` 查看内置分析包。",
+        "pack_file": "自定义分析包 TOML 文件。",
+        "template": "报告模板 ID。运行 `openbusiness templates` 查看内置模板。",
+        "template_file": "带 TOML front matter 的自定义报告模板 Markdown 文件。",
         "depth": "分析深度: standard 更快，deep 会增加证据采集范围和搜索深度",
+        "packs_help": "列出内置分析包",
+        "templates_help": "列出内置报告模板",
+        "id": "ID",
+        "name": "名称",
+        "description_column": "说明",
+        "analysis_pack": "分析包",
+        "report_template": "报告模板",
+        "artifacts_written": "运行产物：",
     },
 }
 
@@ -279,6 +312,123 @@ def _choose_analysis_languages(
     return output_language, ui_language
 
 
+def _slugify(value: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "_", value.lower()).strip("_")
+    return slug or "company"
+
+
+def _extract_verified_sources(*texts: str) -> list[str]:
+    sources: list[str] = []
+    seen: set[str] = set()
+    for text in texts:
+        for source in re.findall(r"\[VERIFIED:([^\]]+)\]", text or ""):
+            normalized = source.strip()
+            if normalized and normalized not in seen:
+                seen.add(normalized)
+                sources.append(normalized)
+    return sources
+
+
+STAGE_ARTIFACTS = {
+    "evidence_pack": "01_evidence.md",
+    "jtbd_report": "02_jtbd.md",
+    "value_prop_report": "03_value_prop.md",
+    "gtm_report": "04_gtm.md",
+    "unit_econ_report": "05_unit_econ.md",
+    "moat_report": "06_moat.md",
+    "canvas_report": "07_canvas.md",
+    "stress_test_report": "08_stress_test.md",
+    "final_report": "09_final.md",
+}
+
+
+def _write_run_artifacts(
+    *,
+    output_dir: Path,
+    slug: str,
+    final_state: dict,
+    report: str,
+    warnings: list[str],
+    company: str,
+    domain: str,
+    ticker: str,
+    output_language: str,
+    ui_language: str,
+    analysis_depth: str,
+    analysis_pack: str,
+    report_template: str,
+) -> Path:
+    run_dir = output_dir / slug
+    stages_dir = run_dir / "stages"
+    stages_dir.mkdir(parents=True, exist_ok=True)
+
+    for key, filename in STAGE_ARTIFACTS.items():
+        content = final_state.get(key, "")
+        if content:
+            (stages_dir / filename).write_text(str(content), encoding="utf-8")
+
+    report_path = run_dir / f"report.{output_language}.md"
+    report_path.write_text(report, encoding="utf-8")
+
+    evidence_pack = str(final_state.get("evidence_pack", ""))
+    sources = _extract_verified_sources(*[str(final_state.get(key, "")) for key in STAGE_ARTIFACTS])
+
+    (run_dir / "evidence.json").write_text(
+        json.dumps(
+            {
+                "company": company,
+                "domain": domain,
+                "ticker": ticker,
+                "verified_sources": sources,
+                "evidence_pack": evidence_pack,
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    sources_markdown = "\n".join(f"- {source}" for source in sources) or "- [MISSING] No verified sources extracted."
+    (run_dir / "sources.md").write_text(f"# Sources\n\n{sources_markdown}\n", encoding="utf-8")
+
+    run_meta = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "company": company,
+        "domain": domain,
+        "ticker": ticker,
+        "output_language": output_language,
+        "ui_language": ui_language,
+        "analysis_depth": analysis_depth,
+        "analysis_pack": analysis_pack,
+        "report_template": report_template,
+        "evidence_label_policy": {
+            "verified": "[VERIFIED:url] means directly supported by cited source evidence.",
+            "inferred": "[INFERRED] means reasoned from evidence without direct citation.",
+            "missing": "[MISSING] means important data was absent or unavailable.",
+        },
+        "language_warnings": warnings,
+        "paths": {
+            "report": str(report_path),
+            "stages": str(stages_dir),
+            "evidence": str(run_dir / "evidence.json"),
+            "sources": str(run_dir / "sources.md"),
+        },
+    }
+    (run_dir / "run.json").write_text(json.dumps(run_meta, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return run_dir
+
+
+def _print_profile_table(ui_language: str, title: str, profiles) -> None:
+    table = Table(title=title, border_style="cyan", show_header=True)
+    table.add_column(_help_text(ui_language, "id"), style="bold")
+    table.add_column(_help_text(ui_language, "name"))
+    table.add_column(_help_text(ui_language, "description_column"))
+    for profile in profiles:
+        table.add_row(profile.id, profile.name, profile.description)
+    console.print(table)
+
+
 def run_analysis(
     company: str,
     domain: str,
@@ -287,6 +437,10 @@ def run_analysis(
     output_language: str | None = None,
     analysis_depth: str = "standard",
     ui_language: str | None = None,
+    pack_name: str = "general",
+    pack_file: str | None = None,
+    template_name: str = "standard",
+    template_file: str | None = None,
 ) -> None:
     """Run the pipeline against a target company."""
     from openbusiness.graph.setup import PIPELINE_STAGES, build_graph
@@ -299,6 +453,12 @@ def run_analysis(
     if analysis_depth not in ANALYSIS_DEPTHS:
         console.print(f"[red]Unsupported analysis depth: {analysis_depth!r}[/]")
         sys.exit(2)
+    try:
+        analysis_pack = load_analysis_pack(pack_name, pack_file)
+        report_template = load_report_template(template_name, template_file)
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/]")
+        sys.exit(2)
 
     console.print(
         Panel.fit(
@@ -306,7 +466,9 @@ def run_analysis(
             f"{ui_text(ui_language, 'target')}: [bold]{company}[/] "
             f"({domain or ui_text(ui_language, 'no_domain')})" + (f" [{ticker}]" if ticker else "")
             + f"\n{ui_text(ui_language, 'output_language')}: [bold]{output_language_name(language)}[/]"
-            + f"\n{ui_text(ui_language, 'analysis_depth')}: [bold]{analysis_depth}[/]",
+            + f"\n{ui_text(ui_language, 'analysis_depth')}: [bold]{analysis_depth}[/]"
+            + f"\n{_help_text(ui_language, 'analysis_pack')}: [bold]{analysis_pack.id}[/]"
+            + f"\n{_help_text(ui_language, 'report_template')}: [bold]{report_template.id}[/]",
             title=f"🚀 {ui_text(ui_language, 'analysis_title')}",
             border_style="cyan",
         )
@@ -320,6 +482,10 @@ def run_analysis(
         "ticker": ticker,
         "output_language": language,
         "analysis_depth": analysis_depth,
+        "analysis_pack": analysis_pack.id,
+        "report_template": report_template.id,
+        "pack_context": analysis_pack.to_prompt_block(),
+        "template_context": report_template.to_prompt_block(),
         "evidence_pack": "",
         "jtbd_report": "",
         "value_prop_report": "",
@@ -363,7 +529,7 @@ def run_analysis(
 
     out = Path(output_dir)
     out.mkdir(exist_ok=True)
-    slug = company.lower().replace(" ", "_")
+    slug = _slugify(company)
     out_path = out / f"{slug}_business_model.md"
     out_path.write_text(report, encoding="utf-8")
 
@@ -377,7 +543,24 @@ def run_analysis(
             )
         )
 
+    run_dir = _write_run_artifacts(
+        output_dir=out,
+        slug=slug,
+        final_state=final_state,
+        report=report,
+        warnings=warnings,
+        company=company,
+        domain=domain or f"{company.lower().replace(' ', '')}.com",
+        ticker=ticker,
+        output_language=language,
+        ui_language=ui_language,
+        analysis_depth=analysis_depth,
+        analysis_pack=analysis_pack.id,
+        report_template=report_template.id,
+    )
+
     console.print(f"\n[bold green]✅ {ui_text(ui_language, 'report_generated')}[/] {out_path}")
+    console.print(f"[bold green]✅ {_help_text(ui_language, 'artifacts_written')}[/] {run_dir}")
     preview = report[:800] + "\n..." if len(report) > 800 else report
     console.print(Panel(preview, title=ui_text(ui_language, "preview"), border_style="green"))
 
@@ -405,6 +588,8 @@ def main() -> None:
     )
 
     sub.add_parser("show", help=_help_text(cli_language, "show_help"))
+    sub.add_parser("packs", help=_help_text(cli_language, "packs_help"))
+    sub.add_parser("templates", help=_help_text(cli_language, "templates_help"))
 
     p_analyze = sub.add_parser("analyze", help=_help_text(cli_language, "analyze_help"))
     p_analyze.add_argument("company", help=_help_text(cli_language, "company"))
@@ -429,6 +614,26 @@ def main() -> None:
         choices=list(ANALYSIS_DEPTHS),
         default="standard",
         help=_help_text(cli_language, "depth"),
+    )
+    p_analyze.add_argument(
+        "--pack",
+        default="general",
+        help=_help_text(cli_language, "pack"),
+    )
+    p_analyze.add_argument(
+        "--pack-file",
+        default=None,
+        help=_help_text(cli_language, "pack_file"),
+    )
+    p_analyze.add_argument(
+        "--template",
+        default="standard",
+        help=_help_text(cli_language, "template"),
+    )
+    p_analyze.add_argument(
+        "--template-file",
+        default=None,
+        help=_help_text(cli_language, "template_file"),
     )
 
     args = parser.parse_args()
@@ -464,6 +669,14 @@ def main() -> None:
             console.print(_config_text(show_language, "no_config"))
         return
 
+    if args.cmd == "packs":
+        _print_profile_table(cli_language, _help_text(cli_language, "packs_help"), list_analysis_packs())
+        return
+
+    if args.cmd == "templates":
+        _print_profile_table(cli_language, _help_text(cli_language, "templates_help"), list_report_templates())
+        return
+
     if args.cmd == "analyze":
         if not config.is_configured():
             wizard_language = normalize_output_language(args.ui_language or config.get_ui_language())
@@ -483,6 +696,10 @@ def main() -> None:
             args.language,
             args.depth,
             args.ui_language,
+            args.pack,
+            args.pack_file,
+            args.template,
+            args.template_file,
         )
         return
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from openbusiness.agents.utils.agent_state import AgentState
+from openbusiness.agents.utils.prompt_context import with_analysis_context
 from openbusiness.language import with_output_language
 
 SYSTEM_PROMPT = """\
@@ -42,10 +43,13 @@ def create_moat_analyst(llm):
         response = llm.invoke(
             [
                 SystemMessage(
-                    content=with_output_language(
-                        SYSTEM_PROMPT,
-                        state.get("output_language"),
-                        "moat_analyst",
+                    content=with_analysis_context(
+                        with_output_language(
+                            SYSTEM_PROMPT,
+                            state.get("output_language"),
+                            "moat_analyst",
+                        ),
+                        state,
                     )
                 ),
                 HumanMessage(

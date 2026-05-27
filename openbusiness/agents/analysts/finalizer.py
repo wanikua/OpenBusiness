@@ -9,6 +9,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from openbusiness.agents.utils.agent_state import AgentState
+from openbusiness.agents.utils.prompt_context import with_analysis_context
 from openbusiness.language import with_output_language
 
 STANDARD_CONTEXT_CHARS = 7000
@@ -64,10 +65,13 @@ def create_finalizer(llm):
         response = llm.invoke(
             [
                 SystemMessage(
-                    content=with_output_language(
-                        SYSTEM_PROMPT,
-                        state.get("output_language"),
-                        "finalizer",
+                    content=with_analysis_context(
+                        with_output_language(
+                            SYSTEM_PROMPT,
+                            state.get("output_language"),
+                            "finalizer",
+                        ),
+                        state,
                     )
                 ),
                 HumanMessage(

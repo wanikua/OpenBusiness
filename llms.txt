@@ -14,6 +14,9 @@ OpenBusiness is an open-source Python CLI that turns a company name into a struc
 - Unit economics and sensitivity analysis.
 - Moat, competitive analysis, and assumption stress testing.
 - Evidence collection through Tavily, Firecrawl, and SEC EDGAR.
+- Analysis packs for SaaS, public companies, ecommerce, AI infrastructure, consumer apps, and general research.
+- Report templates for standard reports, investor memos, founder copycat studies, and competitor maps.
+- Reproducible run artifacts with stage reports, extracted sources, evidence JSON, and run metadata.
 - Bilingual output: English and Simplified Chinese.
 - Provider support: OpenAI, Anthropic, and DeepSeek.
 
@@ -32,6 +35,7 @@ source .venv/bin/activate
 openbusiness analyze "Notion" --domain notion.so --language en
 openbusiness analyze "Costco" --ticker COST --language en
 openbusiness analyze "Notion" --domain notion.so --language zh --depth deep
+openbusiness analyze "Vercel" --domain vercel.com --pack saas --template investor-memo
 ```
 
 ## Evidence Labels
@@ -45,9 +49,12 @@ openbusiness analyze "Notion" --domain notion.so --language zh --depth deep
 - `README.md`: full product overview, install guide, CLI usage, architecture, and troubleshooting.
 - `install.sh`: bilingual installer that asks for English or Chinese first.
 - `openbusiness/cli.py`: CLI entry point.
+- `openbusiness/profiles.py`: analysis pack and report template loading.
+- `openbusiness/resources/`: built-in analysis packs and report templates.
 - `openbusiness/graph/setup.py`: LangGraph pipeline.
 - `openbusiness/agents/analysts/`: analyst prompts and agent nodes.
 - `openbusiness/tools/`: evidence and financial tools.
+- `docs/EXTENDING.md`: guidance for adding packs, templates, and evidence tools.
 - `docs/PROMOTION.md`: community launch and promotion copy.
 - `CONTRIBUTING.md`: contribution guide.
 - `LICENSE`: MIT License.

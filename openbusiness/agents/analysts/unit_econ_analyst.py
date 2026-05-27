@@ -5,6 +5,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from openbusiness.agents.utils.agent_state import AgentState
+from openbusiness.agents.utils.prompt_context import with_analysis_context
 from openbusiness.agents.utils.tool_calling import invoke_with_tools
 from openbusiness.language import with_output_language
 from openbusiness.tools.financial_tools import calculate_unit_economics
@@ -45,10 +46,13 @@ def create_unit_econ_analyst(llm):
             agent_llm,
             [
                 SystemMessage(
-                    content=with_output_language(
-                        SYSTEM_PROMPT,
-                        state.get("output_language"),
-                        "unit_econ_analyst",
+                    content=with_analysis_context(
+                        with_output_language(
+                            SYSTEM_PROMPT,
+                            state.get("output_language"),
+                            "unit_econ_analyst",
+                        ),
+                        state,
                     )
                 ),
                 HumanMessage(
