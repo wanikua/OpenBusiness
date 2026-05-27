@@ -1,0 +1,59 @@
+# OpenBusiness
+
+> Evidence-first AI business model analysis and reverse engineering for founders, investors, consultants, and strategy teams.
+
+OpenBusiness is an open-source Python CLI that turns a company name into a structured business model report. It collects evidence from the web, runs specialized analyst agents, builds a business model canvas, stress-tests assumptions, and labels every claim as verified, inferred, or missing.
+
+## Key Capabilities
+
+- AI business model analysis and reverse engineering.
+- Business model canvas generation.
+- Go-to-market and channel analysis.
+- Jobs-to-be-Done and customer segmentation.
+- Value proposition and adoption-friction analysis.
+- Unit economics and sensitivity analysis.
+- Moat, competitive analysis, and assumption stress testing.
+- Evidence collection through Tavily, Firecrawl, and SEC EDGAR.
+- Bilingual output: English and Simplified Chinese.
+- Provider support: OpenAI, Anthropic, and DeepSeek.
+
+## Install
+
+```bash
+git clone https://github.com/wanikua/OpenBusiness.git
+cd OpenBusiness
+./install.sh
+source .venv/bin/activate
+```
+
+## Run
+
+```bash
+openbusiness analyze "Notion" --domain notion.so --language en
+openbusiness analyze "Costco" --ticker COST --language en
+openbusiness analyze "Notion" --domain notion.so --language zh --depth deep
+```
+
+## Evidence Labels
+
+- `[VERIFIED:url]`: source-backed claim.
+- `[INFERRED]`: reasoned assumption from available evidence.
+- `[MISSING]`: material data gap.
+
+## Important Files
+
+- `README.md`: full product overview, install guide, CLI usage, architecture, and troubleshooting.
+- `install.sh`: bilingual installer that asks for English or Chinese first.
+- `openbusiness/cli.py`: CLI entry point.
+- `openbusiness/graph/setup.py`: LangGraph pipeline.
+- `openbusiness/agents/analysts/`: analyst prompts and agent nodes.
+- `openbusiness/tools/`: evidence and financial tools.
+- `docs/PROMOTION.md`: community launch and promotion copy.
+- `CONTRIBUTING.md`: contribution guide.
+- `LICENSE`: MIT License.
+
+## Repository
+
+- Homepage: https://github.com/wanikua/OpenBusiness
+- Issues: https://github.com/wanikua/OpenBusiness/issues
+- License: MIT

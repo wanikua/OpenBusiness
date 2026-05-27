@@ -1,10 +1,38 @@
 [project]
 name = "openbusiness"
 version = "0.1.0"
-description = "AI-driven multi-agent business model reverse engineering"
+description = "Evidence-first AI business model analysis and reverse engineering"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
+keywords = [
+    "ai agents",
+    "business model",
+    "business model canvas",
+    "competitive analysis",
+    "evidence research",
+    "go-to-market",
+    "langgraph",
+    "market research",
+    "startup analysis",
+    "unit economics",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Natural Language :: Chinese (Simplified)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "langgraph>=0.4.0",
     "langchain>=0.3.0",
@@ -18,6 +46,11 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest", "ruff"]
+
+[project.urls]
+Homepage = "https://github.com/wanikua/OpenBusiness"
+Repository = "https://github.com/wanikua/OpenBusiness"
+Issues = "https://github.com/wanikua/OpenBusiness/issues"
 
 [project.scripts]
 openbusiness = "openbusiness.cli:main"

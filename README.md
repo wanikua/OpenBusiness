@@ -1,16 +1,19 @@
 # OpenBusiness
 
-> Evidence-first AI business model reverse engineering.
+> Evidence-first AI business model analysis and reverse engineering for founders,
+> investors, consultants, and strategy teams.
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/Built%20with-LangGraph-1f2937?style=flat-square)](https://www.langchain.com/langgraph)
 [![Reports](https://img.shields.io/badge/Output-English%20%7C%20zh-0f766e?style=flat-square)](#bilingual-output)
 [![License](https://img.shields.io/badge/License-MIT-black?style=flat-square)](#license)
 
-OpenBusiness turns a company name into a structured business model report. It
-collects evidence from the web, runs specialized analyst agents, builds a
-business model canvas, stress-tests assumptions, and labels each claim as
-verified, inferred, or missing.
+OpenBusiness is an open-source AI agent CLI for business model analysis,
+competitive research, market research, go-to-market strategy, unit economics,
+and business model canvas generation. Give it a company name, domain, and
+optional stock ticker; it collects evidence from the web, runs specialized
+analyst agents, builds a structured business model canvas, stress-tests
+assumptions, and labels each claim as verified, inferred, or missing.
 
 It is inspired by [TradingAgents](https://github.com/TauricResearch/TradingAgents),
 but OpenBusiness is not a bull-vs-bear debate system. Business model analysis
@@ -31,6 +34,24 @@ buy/sell vote.
 - Local config wizard with hidden API-key input and `0600` config permissions.
 - Language-purity warnings when generated reports mix output languages.
 - Pure Markdown reports that can be archived, edited, or shared directly.
+
+## Use Cases
+
+OpenBusiness is useful when you need a structured first-pass business model
+research report before deeper diligence:
+
+| Audience | Common question | OpenBusiness output |
+| --- | --- | --- |
+| Founders | What can I copy, avoid, or attack in this market? | GTM motion, value proposition, moat, and fatal weakness. |
+| Investors | Is the company robust, plausible, fragile, or speculative? | Evidence-labeled thesis, assumptions, and stress test. |
+| Consultants | How does this company actually make money? | Business model canvas, profit engine, and unit economics. |
+| Product teams | Why do customers switch and stay? | JTBD, adoption friction, switching triggers, and alternatives. |
+| Researchers | What data is missing before making a stronger claim? | Missing-data inventory and validation plan. |
+
+Search keywords: AI business model analysis, business model reverse engineering,
+business model canvas generator, AI market research, AI competitive analysis,
+go-to-market analysis, startup analysis, unit economics analysis, LangGraph
+agents, evidence-first research.
 
 ## What It Produces
 
@@ -290,8 +311,12 @@ OpenBusiness/
 ├── install.sh
 ├── pyproject.toml
 ├── README.md
+├── LICENSE
+├── CONTRIBUTING.md
+├── llms.txt
 ├── .env.example
 ├── docs/
+│   ├── PROMOTION.md
 │   └── assets/
 │       ├── openbusiness-terminal-demo.svg
 │       └── openbusiness-report-preview.svg
@@ -313,6 +338,23 @@ python -m pip install -e ".[dev]"
 python -m ruff check openbusiness
 python -m compileall openbusiness
 ```
+
+## Community
+
+OpenBusiness is meant to be co-built with people who care about better business
+research. The goal is not only to ship an AI agent demo, but to build a shared
+open-source workflow for evidence-labeled company analysis.
+
+- Star the repository if OpenBusiness helps your research workflow.
+- Open an issue for bugs, missing providers, report-quality problems, or
+  company-analysis examples that expose weak reasoning.
+- Share real analysis examples that show where the pipeline is shallow, slow, or
+  missing important evidence.
+- Read [CONTRIBUTING.md](CONTRIBUTING.md) before sending a pull request.
+- Use [docs/PROMOTION.md](docs/PROMOTION.md) for launch copy, GitHub topic
+  suggestions, and community posting templates.
+- `llms.txt` is available for AI assistants, answer engines, and developer
+  tools that need a compact project summary.
 
 ## Troubleshooting
 
@@ -354,4 +396,5 @@ language constraints more strictly.
 
 ## License
 
-MIT
+OpenBusiness is released under the MIT License. See [LICENSE](LICENSE) for the
+full license text.
