@@ -112,7 +112,10 @@ cd OpenBusiness
 
 The installer asks you to choose English or Chinese first, checks Python,
 creates a virtual environment if needed, installs the package in editable mode,
-and starts the configuration wizard in the selected language.
+and starts the configuration wizard in the selected language. That first
+language choice becomes the default terminal UI language and the default report
+language for `openbusiness analyze`, unless you explicitly override the report
+language later.
 
 If you accept the default `.venv` setup, the installer activates it for the
 installation session. In every new terminal, activate it again before running
@@ -135,12 +138,13 @@ The installer normally starts this wizard automatically. Run it manually when
 you skipped the wizard, changed terminals before completing setup, or need to
 update keys later.
 
-The wizard asks for:
+The setup stores:
 
 | Setting | Required | Notes |
 | --- | --- | --- |
+| Interface language | Yes | Set by the installer or `openbusiness config --ui-language en`. |
 | LLM provider | Yes | `openai`, `anthropic`, or `deepseek` |
-| Report language | Yes | `en` or `zh` |
+| Report language | Yes | Defaults to the interface language; can be changed with `--language`. |
 | Provider API key | Yes | OpenAI, Anthropic, or DeepSeek key |
 | Tavily API key | No | Enables live search evidence |
 | Firecrawl API key | No | Enables page scraping evidence |
@@ -187,13 +191,13 @@ Analysis options:
 | `--ticker`, `-t` | Public-company ticker for SEC EDGAR lookup. |
 | `--output`, `-o` | Output directory. Defaults to `output/`. |
 | `--language`, `-l` | Report language for this run. Supports `en` and `zh`. |
-| `--ui-language` | Terminal interface language for this run. Supports `en` and `zh`. |
+| `--ui-language` | Terminal interface language for this run. If `--language` is omitted, the report follows the resolved interface language by default. |
 | `--depth` | Research depth. Use `standard` for faster runs or `deep` for broader evidence collection. |
 
-If `--ui-language` or `--language` is omitted, `openbusiness analyze` asks for
-the missing choice at startup. The two choices are separate: you can use an
-English terminal UI while generating a Chinese report, or a Chinese terminal UI
-while generating an English report.
+`openbusiness analyze` does not ask for language choices at startup. The
+terminal UI language comes from install/config, and the report language follows
+that UI language unless you explicitly set `--language`, `OPENBUSINESS_OUTPUT_LANGUAGE`,
+or `openbusiness config --language`.
 
 ## Environment Variables
 
@@ -202,6 +206,7 @@ and temporary provider switches.
 
 ```bash
 export OPENBUSINESS_PROVIDER=deepseek
+export OPENBUSINESS_UI_LANGUAGE=en
 export OPENBUSINESS_OUTPUT_LANGUAGE=en
 export DEEPSEEK_API_KEY=sk-xxx
 export DEEPSEEK_BASE_URL=https://api.deepseek.com
@@ -214,12 +219,19 @@ export FIRECRAWL_API_KEY=fc-xxx
 openbusiness analyze "Notion" --domain notion.so
 ```
 
-Language precedence:
+Interface language precedence:
+
+1. `openbusiness analyze --ui-language en`
+2. `OPENBUSINESS_UI_LANGUAGE=en`
+3. `ui_language = "en"` in local config
+4. Default: `zh`
+
+Report language precedence:
 
 1. `openbusiness analyze --language en`
 2. `OPENBUSINESS_OUTPUT_LANGUAGE=en`
 3. `output_language = "en"` in local config
-4. Default: `zh`
+4. Resolved interface language
 
 ## Bilingual Output
 
@@ -230,6 +242,10 @@ openbusiness analyze "Notion" --domain notion.so --language en
 openbusiness analyze "Notion" --domain notion.so --language zh
 openbusiness analyze "Notion" --domain notion.so --ui-language en --language zh
 ```
+
+Without `--language`, the report follows the terminal UI language selected
+during installation or configuration. Use `--language` when you want the UI and
+report languages to be different.
 
 The language contract is applied to every analyst node. Final reports also run
 a language-purity check:

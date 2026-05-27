@@ -36,7 +36,8 @@ CONFIG_UI_TEXT = {
             "[bold cyan]OpenBusiness Config Wizard[/]\n\n"
             "Config file: [yellow]~/.config/openbusiness/config.toml[/] (0600 permissions)\n"
             "Environment variables always take priority "
-            "(OPENBUSINESS_OUTPUT_LANGUAGE / OPENAI_API_KEY / ANTHROPIC_API_KEY / "
+            "(OPENBUSINESS_UI_LANGUAGE / OPENBUSINESS_OUTPUT_LANGUAGE / "
+            "OPENAI_API_KEY / ANTHROPIC_API_KEY / "
             "DEEPSEEK_API_KEY / TAVILY_API_KEY / FIRECRAWL_API_KEY)\n"
         ),
         "reconfigure": "\nReconfigure?",
@@ -53,6 +54,7 @@ CONFIG_UI_TEXT = {
         "tavily_prompt": "Tavily API Key (web search, https://tavily.com): ",
         "firecrawl_prompt": "Firecrawl API Key (page scraping, https://firecrawl.dev): ",
         "saved": "\n[green]✅ Config saved to[/] [yellow]{path}[/]",
+        "default_ui_language_set": "[green]✅ Default interface language set to[/] ",
         "next_steps": (
             "[bold]Next step: analyze a company[/]\n\n"
             "  [cyan]openbusiness analyze \"Notion\" --domain notion.so[/]\n"
@@ -76,7 +78,8 @@ CONFIG_UI_TEXT = {
             "[bold cyan]OpenBusiness 配置向导[/]\n\n"
             "配置文件保存路径: [yellow]~/.config/openbusiness/config.toml[/] (权限 0600)\n"
             "环境变量始终优先生效 "
-            "(OPENBUSINESS_OUTPUT_LANGUAGE / OPENAI_API_KEY / ANTHROPIC_API_KEY / "
+            "(OPENBUSINESS_UI_LANGUAGE / OPENBUSINESS_OUTPUT_LANGUAGE / "
+            "OPENAI_API_KEY / ANTHROPIC_API_KEY / "
             "DEEPSEEK_API_KEY / TAVILY_API_KEY / FIRECRAWL_API_KEY)\n"
         ),
         "reconfigure": "\n要重新配置吗?",
@@ -92,6 +95,7 @@ CONFIG_UI_TEXT = {
         "tavily_prompt": "Tavily API Key (Web 搜索, https://tavily.com): ",
         "firecrawl_prompt": "Firecrawl API Key (页面抓取, https://firecrawl.dev): ",
         "saved": "\n[green]✅ 配置已保存到[/] [yellow]{path}[/]",
+        "default_ui_language_set": "[green]✅ 默认界面语言已设置为[/] ",
         "next_steps": (
             "[bold]下一步：分析一家公司[/]\n\n"
             "  [cyan]openbusiness analyze \"Notion\" --domain notion.so[/]\n"
@@ -108,8 +112,51 @@ CONFIG_UI_TEXT = {
 }
 
 
+CLI_HELP_TEXT = {
+    "en": {
+        "description": "AI-driven business model reverse engineering",
+        "config_help": "Run the configuration wizard",
+        "config_reset": "Ignore existing config and enter values again",
+        "config_language": "Set default report output language: zh or en",
+        "config_ui_language": "Set default CLI interface language: zh or en",
+        "show_help": "Show current config without revealing full keys",
+        "analyze_help": "Analyze one company's business model",
+        "company": "Company name (e.g. 'Notion')",
+        "domain": "Official company domain (e.g. notion.so)",
+        "ticker": "Public-company ticker (e.g. AAPL)",
+        "output": "Report output directory",
+        "analyze_language": "Report output language: zh or en; overrides config and environment variables",
+        "analyze_ui_language": (
+            "Run interface language: zh or en; overrides the saved default interface language "
+            "and remains separate from report language"
+        ),
+        "depth": "Research depth: standard is faster; deep broadens evidence collection and search depth",
+    },
+    "zh": {
+        "description": "AI 驱动的商业模式逆向工程",
+        "config_help": "运行配置向导 (首次使用必须运行)",
+        "config_reset": "无视现有配置重新输入",
+        "config_language": "设置默认报告输出语言: zh 或 en",
+        "config_ui_language": "设置默认 CLI 界面语言: zh 或 en",
+        "show_help": "显示当前配置 (不显示完整 key)",
+        "analyze_help": "分析一家公司的商业模式",
+        "company": "公司名 (e.g. 'Notion')",
+        "domain": "官网域名 (e.g. notion.so)",
+        "ticker": "美股代码 (e.g. AAPL)",
+        "output": "报告输出目录",
+        "analyze_language": "报告输出语言: zh 或 en (覆盖配置与环境变量)",
+        "analyze_ui_language": "运行界面语言: zh 或 en；覆盖已保存的默认界面语言，与报告输出语言分开",
+        "depth": "分析深度: standard 更快，deep 会增加证据采集范围和搜索深度",
+    },
+}
+
+
 def _config_text(language: str, key: str) -> str:
     return CONFIG_UI_TEXT[normalize_output_language(language)][key]
+
+
+def _help_text(language: str, key: str) -> str:
+    return CLI_HELP_TEXT[normalize_output_language(language)][key]
 
 
 def _show_current_config(ui_language: str = "zh") -> bool:
@@ -132,7 +179,9 @@ def _show_current_config(ui_language: str = "zh") -> bool:
     table.add_row("Anthropic Key", configured if cfg.get("anthropic_api_key") else "—")
     table.add_row("Tavily Key", configured if cfg.get("tavily_api_key") else "—")
     table.add_row("Firecrawl Key", configured if cfg.get("firecrawl_api_key") else "—")
-    table.add_row("Output Language", output_language_name(config.get_output_language()))
+    configured_ui_language = config.get_ui_language()
+    table.add_row("Interface Language", output_language_name(configured_ui_language))
+    table.add_row("Output Language", output_language_name(config.get_output_language(default=configured_ui_language)))
     console.print(table)
     return True
 
@@ -143,7 +192,7 @@ def run_wizard(
     ui_language: str | None = None,
 ) -> None:
     """Interactive first-run config wizard."""
-    ui_language = normalize_output_language(ui_language or output_language or config.get_output_language())
+    ui_language = normalize_output_language(ui_language or config.get_ui_language())
     console.print(
         Panel.fit(
             _config_text(ui_language, "setup_body"),
@@ -168,7 +217,7 @@ def run_wizard(
     language = Prompt.ask(
         _config_text(ui_language, "report_language"),
         choices=list(SUPPORTED_OUTPUT_LANGUAGES),
-        default=normalize_output_language(output_language or config.get_output_language()),
+        default=normalize_output_language(output_language or ui_language),
     )
 
     if provider == "openai":
@@ -188,7 +237,7 @@ def run_wizard(
     tavily_key = getpass.getpass(_config_text(ui_language, "tavily_prompt")).strip()
     firecrawl_key = getpass.getpass(_config_text(ui_language, "firecrawl_prompt")).strip()
 
-    flat = {"provider": provider, "output_language": language}
+    flat = {"provider": provider, "ui_language": ui_language, "output_language": language}
     if provider == "openai":
         flat["openai_api_key"] = key
     elif provider == "anthropic":
@@ -220,22 +269,11 @@ def _choose_analysis_languages(
     output_language: str | None,
     ui_language: str | None,
 ) -> tuple[str, str]:
-    """Choose terminal UI language and report output language separately."""
-    if ui_language is None:
-        default_ui_language = normalize_output_language(config.get_output_language())
-        ui_language = Prompt.ask(
-            _config_text(default_ui_language, "ui_language"),
-            choices=list(SUPPORTED_OUTPUT_LANGUAGES),
-            default=default_ui_language,
-        )
-    ui_language = normalize_output_language(ui_language)
+    """Resolve terminal UI language and choose report output language separately."""
+    ui_language = normalize_output_language(ui_language or config.get_ui_language())
 
     if output_language is None:
-        output_language = Prompt.ask(
-            _config_text(ui_language, "report_language"),
-            choices=list(SUPPORTED_OUTPUT_LANGUAGES),
-            default=normalize_output_language(config.get_output_language()),
-        )
+        output_language = config.get_output_language(default=ui_language)
     output_language = normalize_output_language(output_language)
 
     return output_language, ui_language
@@ -268,7 +306,7 @@ def run_analysis(
             f"{ui_text(ui_language, 'target')}: [bold]{company}[/] "
             f"({domain or ui_text(ui_language, 'no_domain')})" + (f" [{ticker}]" if ticker else "")
             + f"\n{ui_text(ui_language, 'output_language')}: [bold]{output_language_name(language)}[/]"
-            + f"\nAnalysis depth: [bold]{analysis_depth}[/]",
+            + f"\n{ui_text(ui_language, 'analysis_depth')}: [bold]{analysis_depth}[/]",
             title=f"🚀 {ui_text(ui_language, 'analysis_title')}",
             border_style="cyan",
         )
@@ -345,51 +383,52 @@ def run_analysis(
 
 
 def main() -> None:
+    cli_language = normalize_output_language(config.get_ui_language())
     parser = argparse.ArgumentParser(
         prog="openbusiness",
-        description="AI-driven business model reverse engineering",
+        description=_help_text(cli_language, "description"),
     )
     sub = parser.add_subparsers(dest="cmd")
 
-    p_config = sub.add_parser("config", help="运行配置向导 (首次使用必须运行)")
-    p_config.add_argument("--reset", action="store_true", help="无视现有配置重新输入")
+    p_config = sub.add_parser("config", help=_help_text(cli_language, "config_help"))
+    p_config.add_argument("--reset", action="store_true", help=_help_text(cli_language, "config_reset"))
     p_config.add_argument(
         "--language",
         "-l",
         choices=list(SUPPORTED_OUTPUT_LANGUAGES),
-        help="设置默认报告输出语言: zh 或 en",
+        help=_help_text(cli_language, "config_language"),
     )
     p_config.add_argument(
         "--ui-language",
         choices=list(SUPPORTED_OUTPUT_LANGUAGES),
-        help="配置向导界面语言: zh 或 en",
+        help=_help_text(cli_language, "config_ui_language"),
     )
 
-    sub.add_parser("show", help="显示当前配置 (不显示完整 key)")
+    sub.add_parser("show", help=_help_text(cli_language, "show_help"))
 
-    p_analyze = sub.add_parser("analyze", help="分析一家公司的商业模式")
-    p_analyze.add_argument("company", help="公司名 (e.g. 'Notion')")
-    p_analyze.add_argument("--domain", "-d", default="", help="官网域名 (e.g. notion.so)")
-    p_analyze.add_argument("--ticker", "-t", default="", help="美股代码 (e.g. AAPL)")
-    p_analyze.add_argument("--output", "-o", default="output", help="报告输出目录")
+    p_analyze = sub.add_parser("analyze", help=_help_text(cli_language, "analyze_help"))
+    p_analyze.add_argument("company", help=_help_text(cli_language, "company"))
+    p_analyze.add_argument("--domain", "-d", default="", help=_help_text(cli_language, "domain"))
+    p_analyze.add_argument("--ticker", "-t", default="", help=_help_text(cli_language, "ticker"))
+    p_analyze.add_argument("--output", "-o", default="output", help=_help_text(cli_language, "output"))
     p_analyze.add_argument(
         "--language",
         "-l",
         choices=list(SUPPORTED_OUTPUT_LANGUAGES),
         default=None,
-        help="报告输出语言: zh 或 en (覆盖配置与环境变量)",
+        help=_help_text(cli_language, "analyze_language"),
     )
     p_analyze.add_argument(
         "--ui-language",
         choices=list(SUPPORTED_OUTPUT_LANGUAGES),
         default=None,
-        help="运行界面语言: zh 或 en；与报告输出语言分开",
+        help=_help_text(cli_language, "analyze_ui_language"),
     )
     p_analyze.add_argument(
         "--depth",
         choices=list(ANALYSIS_DEPTHS),
         default="standard",
-        help="分析深度: standard 更快，deep 会增加证据采集范围和搜索深度",
+        help=_help_text(cli_language, "depth"),
     )
 
     args = parser.parse_args()
@@ -399,27 +438,38 @@ def main() -> None:
             cfg = config.load_config()
             cfg["output_language"] = normalize_output_language(args.language)
             config.save_config(cfg)
-            ui_language = normalize_output_language(config.get_output_language())
+            ui_language = normalize_output_language(config.get_ui_language())
             console.print(
                 _config_text(ui_language, "default_language_set")
                 + f"[bold]{output_language_name(args.language)}[/]"
+            )
+            return
+        if args.ui_language and not args.reset and not args.language:
+            cfg = config.load_config()
+            cfg["ui_language"] = normalize_output_language(args.ui_language)
+            cfg["output_language"] = normalize_output_language(args.ui_language)
+            config.save_config(cfg)
+            ui_language = normalize_output_language(args.ui_language)
+            console.print(
+                _config_text(ui_language, "default_ui_language_set")
+                + f"[bold]{output_language_name(args.ui_language)}[/]"
             )
             return
         run_wizard(reset=args.reset, output_language=args.language, ui_language=args.ui_language)
         return
 
     if args.cmd == "show":
-        show_language = normalize_output_language(config.get_output_language())
+        show_language = normalize_output_language(config.get_ui_language())
         if not _show_current_config(show_language):
             console.print(_config_text(show_language, "no_config"))
         return
 
     if args.cmd == "analyze":
         if not config.is_configured():
-            wizard_language = normalize_output_language(args.ui_language or args.language or config.get_output_language())
+            wizard_language = normalize_output_language(args.ui_language or config.get_ui_language())
             console.print(_config_text(wizard_language, "missing_config"))
             if Confirm.ask(_config_text(wizard_language, "run_wizard_now"), default=True):
-                run_wizard(ui_language=wizard_language)
+                run_wizard(output_language=args.language, ui_language=wizard_language)
                 if not config.is_configured():
                     console.print(_config_text(wizard_language, "incomplete_config"))
                     sys.exit(1)
