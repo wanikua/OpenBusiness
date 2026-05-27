@@ -89,14 +89,30 @@ cd OpenBusiness
 ./install.sh
 ```
 
-The installer checks Python, creates a virtual environment if needed, installs
-the package in editable mode, and starts the configuration wizard.
+The installer asks you to choose English or Chinese first, checks Python,
+creates a virtual environment if needed, installs the package in editable mode,
+and starts the configuration wizard in the selected language.
 
-### 3. Configure
+If you accept the default `.venv` setup, the installer activates it for the
+installation session. In every new terminal, activate it again before running
+`openbusiness`:
+
+```bash
+source .venv/bin/activate
+```
+
+If you declined virtual environment creation, skip this activation step and use
+the Python environment where you installed the package.
+
+### 3. Configure Or Reconfigure
 
 ```bash
 openbusiness config
 ```
+
+The installer normally starts this wizard automatically. Run it manually when
+you skipped the wizard, changed terminals before completing setup, or need to
+update keys later.
 
 The wizard asks for:
 
@@ -113,17 +129,24 @@ Config is saved to `~/.config/openbusiness/config.toml`.
 ### 4. Run
 
 ```bash
+source .venv/bin/activate
 openbusiness analyze "Notion" --domain notion.so --language en
 ```
+
+If your shell prompt already shows the virtual environment is active, you do not
+need to run `source .venv/bin/activate` again in the same terminal.
 
 The report is written to `output/notion_business_model.md`.
 
 ## CLI
 
 ```bash
+source .venv/bin/activate
+
 openbusiness config
 openbusiness config --reset
 openbusiness config --language en
+openbusiness config --ui-language en
 openbusiness show
 
 openbusiness analyze "Notion" --domain notion.so

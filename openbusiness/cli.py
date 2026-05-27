@@ -25,8 +25,92 @@ console = Console()
 LLM_PROVIDERS = ("openai", "anthropic", "deepseek")
 ANALYSIS_DEPTHS = ("standard", "deep")
 
+CONFIG_UI_TEXT = {
+    "en": {
+        "current_config": "Current Config",
+        "item": "Item",
+        "status": "Status",
+        "not_set": "[red]not set[/]",
+        "configured": "✅ configured",
+        "setup_body": (
+            "[bold cyan]OpenBusiness Config Wizard[/]\n\n"
+            "Config file: [yellow]~/.config/openbusiness/config.toml[/] (0600 permissions)\n"
+            "Environment variables always take priority "
+            "(OPENBUSINESS_OUTPUT_LANGUAGE / OPENAI_API_KEY / ANTHROPIC_API_KEY / "
+            "DEEPSEEK_API_KEY / TAVILY_API_KEY / FIRECRAWL_API_KEY)\n"
+        ),
+        "reconfigure": "\nReconfigure?",
+        "keep_config": "[dim]Keeping existing config unchanged.[/]",
+        "choose_provider": "[bold]Choose LLM provider[/]",
+        "report_language": "[bold]Report output language[/]",
+        "api_key_required": "[red]API key is required. Exiting.[/]",
+        "evidence_tools_title": "\n[bold]Evidence collection tools (optional — press Enter to skip)[/]",
+        "evidence_tools_note": (
+            "[dim]Without these keys the pipeline still runs, but more analysis "
+            "will rely on model knowledge and be labeled [INFERRED].[/]\n"
+        ),
+        "tavily_prompt": "Tavily API Key (web search, https://tavily.com): ",
+        "firecrawl_prompt": "Firecrawl API Key (page scraping, https://firecrawl.dev): ",
+        "saved": "\n[green]✅ Config saved to[/] [yellow]{path}[/]",
+        "next_steps": (
+            "[bold]Next step: analyze a company[/]\n\n"
+            "  [cyan]openbusiness analyze \"Notion\" --domain notion.so[/]\n"
+            "  [cyan]openbusiness analyze \"Costco\" --ticker COST[/]\n"
+            "  [cyan]openbusiness analyze \"Vercel\" --domain vercel.com[/]\n\n"
+            "[dim]Reports are written to ./output/<company>_business_model.md[/]"
+        ),
+        "default_language_set": "[green]✅ Default report output language set to[/] ",
+        "no_config": "[yellow]No config found. Run: [bold]openbusiness config[/][/]",
+        "missing_config": "[yellow]⚠️ No config found. Run first: [bold]openbusiness config[/][/]",
+        "run_wizard_now": "Run the wizard now?",
+        "incomplete_config": "[red]Config is still incomplete. Run: [bold]openbusiness config --reset[/][/]",
+    },
+    "zh": {
+        "current_config": "当前配置",
+        "item": "项目",
+        "status": "状态",
+        "not_set": "[red]未设置[/]",
+        "configured": "✅ 已配置",
+        "setup_body": (
+            "[bold cyan]OpenBusiness 配置向导[/]\n\n"
+            "配置文件保存路径: [yellow]~/.config/openbusiness/config.toml[/] (权限 0600)\n"
+            "环境变量始终优先生效 "
+            "(OPENBUSINESS_OUTPUT_LANGUAGE / OPENAI_API_KEY / ANTHROPIC_API_KEY / "
+            "DEEPSEEK_API_KEY / TAVILY_API_KEY / FIRECRAWL_API_KEY)\n"
+        ),
+        "reconfigure": "\n要重新配置吗?",
+        "keep_config": "[dim]保持现有配置不变。[/]",
+        "choose_provider": "[bold]选择 LLM 提供方[/]",
+        "report_language": "[bold]报告输出语言[/]",
+        "api_key_required": "[red]API key 必填。退出。[/]",
+        "evidence_tools_title": "\n[bold]证据采集工具 (可选 — 直接回车跳过)[/]",
+        "evidence_tools_note": (
+            "[dim]没有这些 key 不影响运行，但分析会更多依赖 LLM 已有知识 (标 [INFERRED])。[/]\n"
+        ),
+        "tavily_prompt": "Tavily API Key (Web 搜索, https://tavily.com): ",
+        "firecrawl_prompt": "Firecrawl API Key (页面抓取, https://firecrawl.dev): ",
+        "saved": "\n[green]✅ 配置已保存到[/] [yellow]{path}[/]",
+        "next_steps": (
+            "[bold]下一步：分析一家公司[/]\n\n"
+            "  [cyan]openbusiness analyze \"Notion\" --domain notion.so[/]\n"
+            "  [cyan]openbusiness analyze \"Costco\" --ticker COST[/]\n"
+            "  [cyan]openbusiness analyze \"Vercel\" --domain vercel.com[/]\n\n"
+            "[dim]报告会输出到 ./output/<company>_business_model.md[/]"
+        ),
+        "default_language_set": "[green]✅ 默认报告输出语言已设置为[/] ",
+        "no_config": "[yellow]未找到配置。运行: [bold]openbusiness config[/][/]",
+        "missing_config": "[yellow]⚠️ 未找到配置。请先运行: [bold]openbusiness config[/][/]",
+        "run_wizard_now": "现在运行向导吗?",
+        "incomplete_config": "[red]配置仍不完整。请运行: [bold]openbusiness config --reset[/][/]",
+    },
+}
 
-def _show_current_config() -> bool:
+
+def _config_text(language: str, key: str) -> str:
+    return CONFIG_UI_TEXT[normalize_output_language(language)][key]
+
+
+def _show_current_config(ui_language: str = "zh") -> bool:
     """Show what's already configured. Returns True if anything is configured."""
     if not config.CONFIG_FILE.exists():
         return False
@@ -35,48 +119,52 @@ def _show_current_config() -> bool:
     if not cfg:
         return False
 
-    table = Table(title="当前配置", border_style="cyan", show_header=True)
-    table.add_column("项目", style="bold")
-    table.add_column("状态")
+    table = Table(title=_config_text(ui_language, "current_config"), border_style="cyan", show_header=True)
+    table.add_column(_config_text(ui_language, "item"), style="bold")
+    table.add_column(_config_text(ui_language, "status"))
 
     provider = cfg.get("provider", "")
-    table.add_row("LLM Provider", provider or "[red]未设置[/]")
-    table.add_row("OpenAI Key", "✅ 已配置" if cfg.get("openai_api_key") else "—")
-    table.add_row("Anthropic Key", "✅ 已配置" if cfg.get("anthropic_api_key") else "—")
-    table.add_row("Tavily Key", "✅ 已配置" if cfg.get("tavily_api_key") else "—")
-    table.add_row("Firecrawl Key", "✅ 已配置" if cfg.get("firecrawl_api_key") else "—")
+    configured = _config_text(ui_language, "configured")
+    table.add_row("LLM Provider", provider or _config_text(ui_language, "not_set"))
+    table.add_row("OpenAI Key", configured if cfg.get("openai_api_key") else "—")
+    table.add_row("Anthropic Key", configured if cfg.get("anthropic_api_key") else "—")
+    table.add_row("Tavily Key", configured if cfg.get("tavily_api_key") else "—")
+    table.add_row("Firecrawl Key", configured if cfg.get("firecrawl_api_key") else "—")
     table.add_row("Output Language", output_language_name(config.get_output_language()))
     console.print(table)
     return True
 
 
-def run_wizard(reset: bool = False, output_language: str | None = None) -> None:
+def run_wizard(
+    reset: bool = False,
+    output_language: str | None = None,
+    ui_language: str | None = None,
+) -> None:
     """Interactive first-run config wizard."""
+    ui_language = normalize_output_language(ui_language or output_language or config.get_output_language())
     console.print(
         Panel.fit(
-            "[bold cyan]OpenBusiness 配置向导[/]\n\n"
-            "配置文件保存路径: [yellow]~/.config/openbusiness/config.toml[/] (权限 0600)\n"
-            "环境变量始终优先生效 (OPENBUSINESS_OUTPUT_LANGUAGE / OPENAI_API_KEY / ANTHROPIC_API_KEY / DEEPSEEK_API_KEY / TAVILY_API_KEY / FIRECRAWL_API_KEY)\n",
+            _config_text(ui_language, "setup_body"),
             title="🛠️ Setup",
             border_style="cyan",
         )
     )
 
-    has_config = _show_current_config()
+    has_config = _show_current_config(ui_language)
     if has_config and not reset:
-        if not Confirm.ask("\n要重新配置吗?", default=False):
-            console.print("[dim]保持现有配置不变。[/]")
-            _print_next_steps()
+        if not Confirm.ask(_config_text(ui_language, "reconfigure"), default=False):
+            console.print(_config_text(ui_language, "keep_config"))
+            _print_next_steps(ui_language)
             return
 
     console.print()
     provider = Prompt.ask(
-        "[bold]选择 LLM 提供方[/]",
+        _config_text(ui_language, "choose_provider"),
         choices=list(LLM_PROVIDERS),
         default="openai",
     )
     language = Prompt.ask(
-        "[bold]报告输出语言[/]",
+        _config_text(ui_language, "report_language"),
         choices=list(SUPPORTED_OUTPUT_LANGUAGES),
         default=normalize_output_language(output_language or config.get_output_language()),
     )
@@ -89,14 +177,14 @@ def run_wizard(reset: bool = False, output_language: str | None = None) -> None:
         key = getpass.getpass("DeepSeek API Key: ").strip()
 
     if not key:
-        console.print("[red]API key 必填。退出。[/]")
+        console.print(_config_text(ui_language, "api_key_required"))
         sys.exit(1)
 
-    console.print("\n[bold]证据采集工具 (可选 — 直接回车跳过)[/]")
-    console.print("[dim]没有这些 key 不影响运行，但分析会更多依赖 LLM 已有知识 (标 [INFERRED])。[/]\n")
+    console.print(_config_text(ui_language, "evidence_tools_title"))
+    console.print(_config_text(ui_language, "evidence_tools_note"))
 
-    tavily_key = getpass.getpass("Tavily API Key (Web 搜索, https://tavily.com): ").strip()
-    firecrawl_key = getpass.getpass("Firecrawl API Key (页面抓取, https://firecrawl.dev): ").strip()
+    tavily_key = getpass.getpass(_config_text(ui_language, "tavily_prompt")).strip()
+    firecrawl_key = getpass.getpass(_config_text(ui_language, "firecrawl_prompt")).strip()
 
     flat = {"provider": provider, "output_language": language}
     if provider == "openai":
@@ -112,18 +200,14 @@ def run_wizard(reset: bool = False, output_language: str | None = None) -> None:
 
     config.save_config(flat)
 
-    console.print(f"\n[green]✅ 配置已保存到[/] [yellow]{config.CONFIG_FILE}[/]")
-    _print_next_steps()
+    console.print(_config_text(ui_language, "saved").format(path=config.CONFIG_FILE))
+    _print_next_steps(ui_language)
 
 
-def _print_next_steps() -> None:
+def _print_next_steps(ui_language: str = "zh") -> None:
     console.print(
         Panel(
-            "[bold]下一步：分析一家公司[/]\n\n"
-            "  [cyan]openbusiness analyze \"Notion\" --domain notion.so[/]\n"
-            "  [cyan]openbusiness analyze \"Costco\" --ticker COST[/]\n"
-            "  [cyan]openbusiness analyze \"Vercel\" --domain vercel.com[/]\n\n"
-            "[dim]报告会输出到 ./output/<company>_business_model.md[/]",
+            _config_text(ui_language, "next_steps"),
             title="🚀 Ready",
             border_style="green",
         )
@@ -247,6 +331,11 @@ def main() -> None:
         choices=list(SUPPORTED_OUTPUT_LANGUAGES),
         help="设置默认报告输出语言: zh 或 en",
     )
+    p_config.add_argument(
+        "--ui-language",
+        choices=list(SUPPORTED_OUTPUT_LANGUAGES),
+        help="配置向导界面语言: zh 或 en",
+    )
 
     sub.add_parser("show", help="显示当前配置 (不显示完整 key)")
 
@@ -272,30 +361,33 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.cmd == "config":
-        if args.language and not args.reset:
+        if args.language and not args.reset and not args.ui_language:
             cfg = config.load_config()
             cfg["output_language"] = normalize_output_language(args.language)
             config.save_config(cfg)
+            ui_language = normalize_output_language(config.get_output_language())
             console.print(
-                f"[green]✅ 默认报告输出语言已设置为[/] "
-                f"[bold]{output_language_name(args.language)}[/]"
+                _config_text(ui_language, "default_language_set")
+                + f"[bold]{output_language_name(args.language)}[/]"
             )
             return
-        run_wizard(reset=args.reset, output_language=args.language)
+        run_wizard(reset=args.reset, output_language=args.language, ui_language=args.ui_language)
         return
 
     if args.cmd == "show":
-        if not _show_current_config():
-            console.print("[yellow]未找到配置。运行: [bold]openbusiness config[/][/]")
+        show_language = normalize_output_language(config.get_output_language())
+        if not _show_current_config(show_language):
+            console.print(_config_text(show_language, "no_config"))
         return
 
     if args.cmd == "analyze":
         if not config.is_configured():
-            console.print("[yellow]⚠️ 未找到配置。请先运行: [bold]openbusiness config[/][/]")
-            if Confirm.ask("现在运行向导吗?", default=True):
-                run_wizard()
+            wizard_language = normalize_output_language(args.language or config.get_output_language())
+            console.print(_config_text(wizard_language, "missing_config"))
+            if Confirm.ask(_config_text(wizard_language, "run_wizard_now"), default=True):
+                run_wizard(ui_language=wizard_language)
                 if not config.is_configured():
-                    console.print("[red]配置仍不完整。请运行: [bold]openbusiness config --reset[/][/]")
+                    console.print(_config_text(wizard_language, "incomplete_config"))
                     sys.exit(1)
             else:
                 sys.exit(1)
