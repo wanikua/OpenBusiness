@@ -43,6 +43,7 @@ CONFIG_UI_TEXT = {
         "keep_config": "[dim]Keeping existing config unchanged.[/]",
         "choose_provider": "[bold]Choose LLM provider[/]",
         "report_language": "[bold]Report output language[/]",
+        "ui_language": "[bold]Interface language / 选择界面语言[/]",
         "api_key_required": "[red]API key is required. Exiting.[/]",
         "evidence_tools_title": "\n[bold]Evidence collection tools (optional — press Enter to skip)[/]",
         "evidence_tools_note": (
@@ -82,6 +83,7 @@ CONFIG_UI_TEXT = {
         "keep_config": "[dim]保持现有配置不变。[/]",
         "choose_provider": "[bold]选择 LLM 提供方[/]",
         "report_language": "[bold]报告输出语言[/]",
+        "ui_language": "[bold]Interface language / 选择界面语言[/]",
         "api_key_required": "[red]API key 必填。退出。[/]",
         "evidence_tools_title": "\n[bold]证据采集工具 (可选 — 直接回车跳过)[/]",
         "evidence_tools_note": (
@@ -214,6 +216,31 @@ def _print_next_steps(ui_language: str = "zh") -> None:
     )
 
 
+def _choose_analysis_languages(
+    output_language: str | None,
+    ui_language: str | None,
+) -> tuple[str, str]:
+    """Choose terminal UI language and report output language separately."""
+    if ui_language is None:
+        default_ui_language = normalize_output_language(config.get_output_language())
+        ui_language = Prompt.ask(
+            _config_text(default_ui_language, "ui_language"),
+            choices=list(SUPPORTED_OUTPUT_LANGUAGES),
+            default=default_ui_language,
+        )
+    ui_language = normalize_output_language(ui_language)
+
+    if output_language is None:
+        output_language = Prompt.ask(
+            _config_text(ui_language, "report_language"),
+            choices=list(SUPPORTED_OUTPUT_LANGUAGES),
+            default=normalize_output_language(config.get_output_language()),
+        )
+    output_language = normalize_output_language(output_language)
+
+    return output_language, ui_language
+
+
 def run_analysis(
     company: str,
     domain: str,
@@ -221,12 +248,13 @@ def run_analysis(
     output_dir: str,
     output_language: str | None = None,
     analysis_depth: str = "standard",
+    ui_language: str | None = None,
 ) -> None:
     """Run the pipeline against a target company."""
     from openbusiness.graph.setup import PIPELINE_STAGES, build_graph
 
     try:
-        language = normalize_output_language(output_language or config.get_output_language())
+        language, ui_language = _choose_analysis_languages(output_language, ui_language)
     except ValueError as exc:
         console.print(f"[red]{exc}[/]")
         sys.exit(2)
@@ -237,11 +265,11 @@ def run_analysis(
     console.print(
         Panel.fit(
             f"[bold cyan]OpenBusiness[/] v0.1.0\n"
-            f"{ui_text(language, 'target')}: [bold]{company}[/] "
-            f"({domain or ui_text(language, 'no_domain')})" + (f" [{ticker}]" if ticker else "")
-            + f"\n{ui_text(language, 'output_language')}: [bold]{output_language_name(language)}[/]"
+            f"{ui_text(ui_language, 'target')}: [bold]{company}[/] "
+            f"({domain or ui_text(ui_language, 'no_domain')})" + (f" [{ticker}]" if ticker else "")
+            + f"\n{ui_text(ui_language, 'output_language')}: [bold]{output_language_name(language)}[/]"
             + f"\nAnalysis depth: [bold]{analysis_depth}[/]",
-            title=f"🚀 {ui_text(language, 'analysis_title')}",
+            title=f"🚀 {ui_text(ui_language, 'analysis_title')}",
             border_style="cyan",
         )
     )
@@ -267,7 +295,7 @@ def run_analysis(
     }
 
     stage_labels = dict(PIPELINE_STAGES)
-    if language == "zh":
+    if ui_language == "zh":
         stage_labels = {
             "evidence_collector": "🔍 证据收集",
             "jtbd_analyst": "👥 客户与待完成任务分析",
@@ -281,7 +309,7 @@ def run_analysis(
         }
 
     final_state = initial_state
-    with console.status(f"[cyan]{ui_text(language, 'starting_pipeline')}[/]") as status:
+    with console.status(f"[cyan]{ui_text(ui_language, 'starting_pipeline')}[/]") as status:
         for event in graph.stream(initial_state, stream_mode="updates"):
             for node_name, node_output in event.items():
                 label = stage_labels.get(node_name, node_name)
@@ -292,7 +320,7 @@ def run_analysis(
 
     report = final_state.get("final_report", "")
     if not report:
-        console.print(f"[red]❌ {ui_text(language, 'pipeline_no_report')}[/]")
+        console.print(f"[red]❌ {ui_text(ui_language, 'pipeline_no_report')}[/]")
         sys.exit(1)
 
     out = Path(output_dir)
@@ -306,14 +334,14 @@ def run_analysis(
         console.print(
             Panel(
                 "\n".join(warnings),
-                title=ui_text(language, "language_warning_title"),
+                title=ui_text(ui_language, "language_warning_title"),
                 border_style="yellow",
             )
         )
 
-    console.print(f"\n[bold green]✅ {ui_text(language, 'report_generated')}[/] {out_path}")
+    console.print(f"\n[bold green]✅ {ui_text(ui_language, 'report_generated')}[/] {out_path}")
     preview = report[:800] + "\n..." if len(report) > 800 else report
-    console.print(Panel(preview, title=ui_text(language, "preview"), border_style="green"))
+    console.print(Panel(preview, title=ui_text(ui_language, "preview"), border_style="green"))
 
 
 def main() -> None:
@@ -352,6 +380,12 @@ def main() -> None:
         help="报告输出语言: zh 或 en (覆盖配置与环境变量)",
     )
     p_analyze.add_argument(
+        "--ui-language",
+        choices=list(SUPPORTED_OUTPUT_LANGUAGES),
+        default=None,
+        help="运行界面语言: zh 或 en；与报告输出语言分开",
+    )
+    p_analyze.add_argument(
         "--depth",
         choices=list(ANALYSIS_DEPTHS),
         default="standard",
@@ -382,7 +416,7 @@ def main() -> None:
 
     if args.cmd == "analyze":
         if not config.is_configured():
-            wizard_language = normalize_output_language(args.language or config.get_output_language())
+            wizard_language = normalize_output_language(args.ui_language or args.language or config.get_output_language())
             console.print(_config_text(wizard_language, "missing_config"))
             if Confirm.ask(_config_text(wizard_language, "run_wizard_now"), default=True):
                 run_wizard(ui_language=wizard_language)
@@ -391,7 +425,15 @@ def main() -> None:
                     sys.exit(1)
             else:
                 sys.exit(1)
-        run_analysis(args.company, args.domain, args.ticker, args.output, args.language, args.depth)
+        run_analysis(
+            args.company,
+            args.domain,
+            args.ticker,
+            args.output,
+            args.language,
+            args.depth,
+            args.ui_language,
+        )
         return
 
     parser.print_help()

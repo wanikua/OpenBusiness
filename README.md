@@ -175,6 +175,7 @@ openbusiness analyze "Costco" --ticker COST
 openbusiness analyze "Vercel" --domain vercel.com --output reports/
 openbusiness analyze "Notion" --domain notion.so --language en
 openbusiness analyze "Notion" --domain notion.so --language zh
+openbusiness analyze "Notion" --domain notion.so --ui-language en --language zh
 openbusiness analyze "Notion" --domain notion.so --depth deep
 ```
 
@@ -186,7 +187,13 @@ Analysis options:
 | `--ticker`, `-t` | Public-company ticker for SEC EDGAR lookup. |
 | `--output`, `-o` | Output directory. Defaults to `output/`. |
 | `--language`, `-l` | Report language for this run. Supports `en` and `zh`. |
+| `--ui-language` | Terminal interface language for this run. Supports `en` and `zh`. |
 | `--depth` | Research depth. Use `standard` for faster runs or `deep` for broader evidence collection. |
+
+If `--ui-language` or `--language` is omitted, `openbusiness analyze` asks for
+the missing choice at startup. The two choices are separate: you can use an
+English terminal UI while generating a Chinese report, or a Chinese terminal UI
+while generating an English report.
 
 ## Environment Variables
 
@@ -221,6 +228,7 @@ OpenBusiness supports English and Simplified Chinese report generation:
 ```bash
 openbusiness analyze "Notion" --domain notion.so --language en
 openbusiness analyze "Notion" --domain notion.so --language zh
+openbusiness analyze "Notion" --domain notion.so --ui-language en --language zh
 ```
 
 The language contract is applied to every analyst node. Final reports also run
