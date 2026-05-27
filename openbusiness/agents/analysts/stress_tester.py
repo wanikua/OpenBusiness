@@ -10,6 +10,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from openbusiness.agents.utils.agent_state import AgentState
+from openbusiness.language import with_output_language
 
 SYSTEM_PROMPT = """\
 # Role
@@ -31,20 +32,20 @@ SYSTEM_PROMPT = """\
 
 # Output
 
-## 🔬 高优先级假设 (失效会让画布塌)
-- 假设 A: [文本]
-  - 证伪条件: ...
-  - 失效连锁: ...
-  - 优先级: High
+## 🔬 High-Priority Assumptions (Failure Breaks The Canvas)
+- Assumption A: [text]
+  - Falsification condition: ...
+  - Failure chain: ...
+  - Priority: High
 
-## ⚠️ 中优先级假设
+## ⚠️ Medium-Priority Assumptions
 - ...
 
-## 🕳️ 致命数据缺口
+## 🕳️ Critical Data Gaps
 - ...
 
-## 💡 一句话定调
-[基于上面的分析，给出对该商业模式 confidence 的一句话总评：Robust / Plausible / Fragile / Speculative]
+## 💡 One-Line Verdict
+[Give a one-sentence confidence verdict on the business model: Robust / Plausible / Fragile / Speculative]
 """
 
 
@@ -52,7 +53,13 @@ def create_stress_tester(llm):
     def node(state: AgentState) -> dict:
         response = llm.invoke(
             [
-                SystemMessage(content=SYSTEM_PROMPT),
+                SystemMessage(
+                    content=with_output_language(
+                        SYSTEM_PROMPT,
+                        state.get("output_language"),
+                        "stress_tester",
+                    )
+                ),
                 HumanMessage(
                     content=(
                         f"目标公司: {state['company_name']}\n\n"

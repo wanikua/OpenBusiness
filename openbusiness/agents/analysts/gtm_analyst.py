@@ -9,6 +9,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from openbusiness.agents.utils.agent_state import AgentState
+from openbusiness.language import with_output_language
 
 SYSTEM_PROMPT = """\
 # Role
@@ -34,10 +35,10 @@ SYSTEM_PROMPT = """\
 3. 每个判断带 [VERIFIED:url] / [INFERRED] / [MISSING]。
 
 # Output
-- ## 主渠道 (Primary)
-- ## 次渠道 (Secondary)
-- ## 信号证据
-- ## 渠道脆弱性 (Channel risk — 如生态寄生、流量被薅)
+- ## Primary Channels
+- ## Secondary Channels
+- ## Evidence Signals
+- ## Channel Risks
 """
 
 
@@ -45,7 +46,13 @@ def create_gtm_analyst(llm):
     def node(state: AgentState) -> dict:
         response = llm.invoke(
             [
-                SystemMessage(content=SYSTEM_PROMPT),
+                SystemMessage(
+                    content=with_output_language(
+                        SYSTEM_PROMPT,
+                        state.get("output_language"),
+                        "gtm_analyst",
+                    )
+                ),
                 HumanMessage(
                     content=(
                         f"目标公司: {state['company_name']}\n\n"

@@ -1,194 +1,216 @@
 # OpenBusiness
 
-> **AI 驱动、证据优先的商业模式逆向工程工具。** 输入一家公司的名字，自动产出一份带「事实 / 推断 / 缺口」分层标注的商业模式画布报告。
+> **AI-driven, evidence-first business model reverse engineering.** Give OpenBusiness a company name and it produces a structured business model canvas report with clear fact, inference, and missing-data labels.
 
-灵感来自 [TradingAgents](https://github.com/TauricResearch/TradingAgents)，但**故意没有照搬**它的牛熊辩论结构 — 商业分析的产出不是 buy/sell 投票，而是结构化解构。
-
----
-
-## 🎯 它能做什么
-
-```
-$ openbusiness analyze "Notion" --domain notion.so
-
-  🔍 Evidence Collector         (Tavily + Firecrawl + SEC EDGAR 抓证据)
-  👥 JTBD Analyst               (谁付钱 / 谁使用 / 完成什么任务)
-  💎 Value Prop Analyst         (10x Better 测试)
-  🚀 GTM Analyst                (PLG / Sales-led / Marketplace / Community ...)
-  💰 Unit Economics Analyst     (LTV / CAC / 盈亏平衡, 纯数学计算)
-  🛡️ Moat Analyst               (5 类壁垒 + 波特五力 + Counter-position)
-  🧱 Business Model Synthesizer (生成画布)
-  🔬 Assumption Stress Tester   (找出哪个假设错了画布会塌)
-  📝 Finalizer                  (拼成最终报告)
-
-✅ 报告已生成: output/notion_business_model.md
-```
-
-报告的每一条结论都打标签：
-- 🟢 `[VERIFIED:url]` — 有源可查
-- 🟡 `[INFERRED]` — LLM 基于上下文推断
-- 🔴 `[MISSING]` — 缺数据，影响信心
+OpenBusiness is inspired by [TradingAgents](https://github.com/TauricResearch/TradingAgents), but it intentionally does not copy the bull-vs-bear debate structure. Business analysis should produce a structured decomposition, not a buy/sell vote.
 
 ---
 
-## 🛠️ 5 分钟安装教程
+## What It Does
 
-### Step 1 · 克隆仓库
+```bash
+$ openbusiness analyze "Notion" --domain notion.so --language en
+
+  🔍 Evidence Collector         (Tavily + Firecrawl + SEC EDGAR evidence gathering)
+  👥 JTBD Analyst               (who pays, who uses it, and what job gets done)
+  💎 Value Prop Analyst         (10x-better test)
+  🚀 GTM Analyst                (PLG, sales-led, marketplace, community, and more)
+  💰 Unit Economics Analyst     (LTV, CAC, break-even math)
+  🛡️ Moat Analyst               (five moat types, Porter forces, counter-positioning)
+  🧱 Business Model Synthesizer (business model canvas)
+  🔬 Assumption Stress Tester   (which assumptions can break the canvas)
+  📝 Finalizer                  (final Markdown report)
+
+✅ Report generated: output/notion_business_model.md
+```
+
+Every claim is tagged:
+
+- `[VERIFIED:url]` means the claim has a source.
+- `[INFERRED]` means the LLM inferred it from context.
+- `[MISSING]` means the data is missing and affects confidence.
+
+---
+
+## Install In 5 Minutes
+
+### Step 1: Clone The Repository
 
 ```bash
 git clone https://github.com/wanikua/OpenBusiness.git
 cd OpenBusiness
 ```
 
-### Step 2 · 跑安装脚本
+### Step 2: Run The Installer
 
 ```bash
 ./install.sh
 ```
 
-这个脚本会做 4 件事，全程交互式提示：
+The installer is interactive and does four things:
 
-1. **检查 Python** — 需要 3.10+。没有它会告诉你去哪下载。
-2. **建虚拟环境** — 在 `.venv/`，问你 Y/n。建议同意，避免污染系统 Python。
-3. **装依赖** — `pip install -e .`，把所有需要的库装好。
-4. **跑配置向导** — 提示你输 API key。看下面。
+1. Checks that Python 3.10 or newer is available.
+2. Creates a `.venv/` virtual environment if you approve it.
+3. Installs the package with `pip install -e .`.
+4. Starts the configuration wizard for API keys and default report language.
 
-### Step 3 · 配置向导问什么
+### Step 3: Configure API Keys
 
-向导会顺序问你这几个问题：
+The wizard asks for:
 
-| 问题 | 怎么答 |
-|------|--------|
-| `选择 LLM 提供方 [openai/anthropic]` | 二选一。OpenAI 默认。 |
-| `OpenAI API Key (sk-...):` 或 `Anthropic API Key (sk-ant-...):` | **必填**。去 [platform.openai.com/api-keys](https://platform.openai.com/api-keys) 或 [console.anthropic.com](https://console.anthropic.com/) 拿。输入时不会回显。 |
-| `Tavily API Key (Web 搜索, 可选):` | **可选**。直接回车跳过。如果想要更靠谱的事实采集，去 [tavily.com](https://tavily.com) 注册（免费额度够用）。 |
-| `Firecrawl API Key (页面抓取, 可选):` | **可选**。直接回车跳过。需要抓官网/定价页时用，去 [firecrawl.dev](https://firecrawl.dev) 注册。 |
+| Prompt | What To Enter |
+| --- | --- |
+| `LLM provider [openai/anthropic/deepseek]` | Choose one provider. OpenAI is the default. |
+| `Report output language [zh/en]` | Choose `zh` for Simplified Chinese reports or `en` for English reports. |
+| `OpenAI API Key (sk-...)` or `Anthropic API Key (sk-ant-...)` | Required. Create one at [platform.openai.com/api-keys](https://platform.openai.com/api-keys) or [console.anthropic.com](https://console.anthropic.com/). Input is hidden. |
+| `Tavily API Key` | Optional. Adds web search evidence from [tavily.com](https://tavily.com). |
+| `Firecrawl API Key` | Optional. Adds page scraping from [firecrawl.dev](https://firecrawl.dev). |
 
-> **不填 Tavily / Firecrawl 会怎样？** 流水线照跑，只是分析里 `[INFERRED]` 占比会更高 — 因为没法抓真实证据，只能靠 LLM 已有知识。不影响功能，影响可信度。
+If Tavily or Firecrawl is not configured, the pipeline still runs, but more findings will be marked `[INFERRED]` because less live evidence is available.
 
-配置保存到 `~/.config/openbusiness/config.toml`，权限 `0600` (只有你能读)。
+Configuration is saved to `~/.config/openbusiness/config.toml` with `0600` permissions.
 
-### Step 4 · 跑第一次分析
+### Step 4: Run Your First Analysis
 
 ```bash
-# 如果用了 venv，先激活
 source .venv/bin/activate
-
-# 拆一家公司
-openbusiness analyze "Notion" --domain notion.so
+openbusiness analyze "Notion" --domain notion.so --language en
 ```
 
-报告输出到 `output/notion_business_model.md`。
+The report is written to `output/notion_business_model.md`.
 
 ---
 
-## 📚 命令行用法
+## CLI Usage
 
 ```bash
-openbusiness config              # 首次配置向导 (或显示当前配置)
-openbusiness config --reset      # 强制重新输入所有 key
-openbusiness show                # 查看当前配置 (不显示完整 key)
+openbusiness config                         # Run the setup wizard
+openbusiness config --reset                 # Re-enter all keys
+openbusiness config --language en           # Set the default report language
+openbusiness show                           # Show current config without full keys
 
 openbusiness analyze "Notion" --domain notion.so
-openbusiness analyze "Costco"   --ticker COST
-openbusiness analyze "Vercel"   --domain vercel.com --output reports/
+openbusiness analyze "Costco" --ticker COST
+openbusiness analyze "Vercel" --domain vercel.com --output reports/
+openbusiness analyze "Notion" --domain notion.so --language en
+openbusiness analyze "Notion" --domain notion.so --language zh
 ```
 
-参数：
-- `--domain / -d` : 官网域名，给 evidence collector 抓页面用
-- `--ticker / -t` : 美股代码 (有的话)，触发 SEC EDGAR 真财报
-- `--output / -o` : 报告目录，默认 `output/`
+Analyze options:
+
+- `--domain / -d`: official website domain, used by the evidence collector.
+- `--ticker / -t`: US stock ticker, used for SEC EDGAR data when available.
+- `--output / -o`: report output directory. Defaults to `output/`.
+- `--language / -l`: report output language. Supported values are `zh` and `en`. This overrides config and environment variables for the current run.
 
 ---
 
-## 🌍 环境变量覆盖
+## Configuration And Environment Variables
 
-环境变量始终优先于配置文件 — 适合 CI、容器、临时切换 key：
+Environment variables always override the config file. This is useful for CI, containers, and temporary key or language switches.
 
 ```bash
-export OPENBUSINESS_PROVIDER=anthropic
-export ANTHROPIC_API_KEY=sk-ant-xxx
+export OPENBUSINESS_PROVIDER=deepseek
+export OPENBUSINESS_OUTPUT_LANGUAGE=en
+export DEEPSEEK_API_KEY=sk-xxx
+export DEEPSEEK_TIMEOUT=60
+export DEEPSEEK_MAX_RETRIES=1
+export DEEPSEEK_MAX_TOKENS=2048
 export TAVILY_API_KEY=tvly-xxx
 export FIRECRAWL_API_KEY=fc-xxx
 
 openbusiness analyze "Notion" --domain notion.so
 ```
 
+Report language precedence:
+
+1. `openbusiness analyze --language en`
+2. `OPENBUSINESS_OUTPUT_LANGUAGE=en`
+3. `output_language = "en"` in `~/.config/openbusiness/config.toml`
+4. Default: `zh`
+
+Language purity:
+
+- `--language en` asks every agent for English-only natural language and warns if the final report contains Chinese characters.
+- `--language zh` asks every agent for Simplified Chinese natural language and warns if the final report contains English section headings or English-like prose lines.
+- Company names, URLs, ticker symbols, metric abbreviations such as ARPU/LTV/CAC/PLG, tool names, and evidence tags are intentionally preserved.
+
 ---
 
-## 🏗️ 架构
+## Architecture
 
-```
+```text
 User
-  │  (company name + domain + ticker)
+  │  company name + optional domain + optional ticker
   ▼
 ┌─────────────────────────────────────┐
-│  Evidence Collector                  │ ← Tavily 搜索 + Firecrawl 抓页面
-│                                      │   + SEC EDGAR 真财报
+│  Evidence Collector                  │ ← Tavily search + Firecrawl scrape
+│                                      │   + SEC EDGAR public filings
 └────────┬─────────────────────────────┘
-         │  evidence_pack (Markdown 证据包)
+         │  evidence_pack
          ▼
 ┌─────────────────────────────────────┐
-│  JTBD Analyst                        │ ← 谁付钱、谁使用、什么任务
+│  JTBD Analyst                        │ ← buyer, user, job, alternatives
 └────────┬─────────────────────────────┘
-         │  + jtbd_report
+         │  jtbd_report
          ▼
 ┌─────────────────────────────────────┐
-│  Value Prop Analyst                  │ ← 10x Better 测试
+│  Value Prop Analyst                  │ ← 10x-better test
 └────────┬─────────────────────────────┘
-         │  + value_prop_report
+         │  value_prop_report
          ▼
 ┌─────────────────────────────────────┐
-│  GTM Analyst                         │ ← 真实分销渠道枚举
+│  GTM Analyst                         │ ← distribution and acquisition channels
 └────────┬─────────────────────────────┘
-         │  + gtm_report
+         │  gtm_report
          ▼
 ┌─────────────────────────────────────┐
-│  Unit Economics Analyst              │ ← LTV/CAC 工具 (纯数学)
+│  Unit Economics Analyst              │ ← LTV/CAC calculation
 └────────┬─────────────────────────────┘
-         │  + unit_econ_report
+         │  unit_econ_report
          ▼
 ┌─────────────────────────────────────┐
-│  Moat & Competition Analyst          │ ← 5 类壁垒 + 波特五力
+│  Moat & Competition Analyst          │ ← five moat types + Porter forces
 └────────┬─────────────────────────────┘
-         │  + moat_report
+         │  moat_report
          ▼
 ┌─────────────────────────────────────┐
-│  Business Model Synthesizer          │ ← 合成画布 (保留所有标签)
+│  Business Model Synthesizer          │ ← tagged business model canvas
 └────────┬─────────────────────────────┘
-         │  + canvas_report
+         │  canvas_report
          ▼
 ┌─────────────────────────────────────┐
-│  Assumption Stress Tester            │ ← 找出致命假设和缺口
+│  Assumption Stress Tester            │ ← fatal assumptions and data gaps
 └────────┬─────────────────────────────┘
-         │  + stress_test_report
+         │  stress_test_report
          ▼
 ┌─────────────────────────────────────┐
-│  Finalizer                           │ ← 整合输出
+│  Finalizer                           │ ← final report assembly
 └────────┬─────────────────────────────┘
          ▼
  output/<company>_business_model.md
 ```
 
-**核心设计原则**：
-- **Linear flow, no debate.** 商业分析的产出是分解，不是投票。
-- **Evidence first.** 任何 LLM 分析前先抓真实证据。
-- **Tag every claim.** 每条结论标 VERIFIED / INFERRED / MISSING。
-- **Tools are pure math.** 单体经济计算是 Python 函数，不靠 LLM 算账。
-- **Two LLM tiers.** Analyst 用 mini/haiku，Synthesizer 用 deep model，省钱。
+Core principles:
+
+- **Linear flow, no debate.** The output is a business decomposition, not a vote.
+- **Evidence first.** The pipeline gathers source material before analysis.
+- **Tag every claim.** Claims stay labeled as verified, inferred, or missing.
+- **Tools are pure math.** Unit economics calculations are Python functions, not LLM arithmetic.
+- **Two LLM tiers.** Analyst nodes use a quick model; synthesis and finalization use a deeper model.
 
 ---
 
-## 📂 项目结构
+## Project Structure
 
-```
+```text
 OpenBusiness/
-├── install.sh                       # 一键安装脚本 (你刚跑过的)
-├── pyproject.toml                   # Python 包定义
+├── install.sh
+├── pyproject.toml
 ├── README.md
-├── .env.example                     # 环境变量示例
+├── .env.example
 ├── openbusiness/
-│   ├── cli.py                       # CLI 入口 (config / show / analyze)
+│   ├── cli.py
 │   ├── agents/
 │   │   ├── analysts/
 │   │   │   ├── evidence_collector.py
@@ -200,98 +222,108 @@ OpenBusiness/
 │   │   │   ├── synthesizer.py
 │   │   │   ├── stress_tester.py
 │   │   │   └── finalizer.py
-│   │   └── utils/agent_state.py     # 共享 TypedDict 状态
+│   │   └── utils/
+│   │       └── agent_state.py
 │   ├── tools/
-│   │   ├── evidence_tools.py        # Tavily / Firecrawl / SEC EDGAR
-│   │   └── financial_tools.py       # LTV/CAC 计算器 (纯函数)
-│   ├── graph/setup.py               # LangGraph 线性流水线
+│   │   ├── evidence_tools.py
+│   │   └── financial_tools.py
+│   ├── graph/setup.py
+│   ├── language.py
 │   └── llm_clients/
-│       ├── config.py                # 配置文件 + 环境变量解析
-│       └── factory.py               # OpenAI / Anthropic 双层工厂
-└── output/                          # 报告输出目录 (.gitignored)
+│       ├── config.py
+│       └── factory.py
+└── output/
 ```
 
 ---
 
-## 📤 输出报告示例
+## Report Example
 
 ```markdown
-# 📊 OpenBusiness 商业模式逆向工程报告
+# OpenBusiness Business Model Reverse Engineering Report
 
 **Target:** Notion | **Confidence:** Plausible
 
 ## 1. Business Model Canvas
-| 核心伙伴 (KP) | 关键业务 (KA) | 价值主张 (VP) | 客户关系 (CR) | 客户细分 (CS) |
+
+| Key Partners | Key Activities | Value Propositions | Customer Relationships | Customer Segments |
+| --- | --- | --- | --- | --- |
 | ... | ... | All-in-one workspace [VERIFIED:notion.so] | PLG self-serve [INFERRED] | ... |
-| | 核心资源: AI Q&A, templates [VERIFIED:...] | | 渠道: PLG + community [VERIFIED:...] | |
-| 成本: 研发 + infra [INFERRED] | 收入: Free / Plus $10/seat / Business $20 [VERIFIED:notion.so/pricing] |
 
-## 2. Key Facts Layered
-### 🟢 Verified Facts
-- 定价: Free / Plus $10/seat/mo / Business $20 / Enterprise [VERIFIED:notion.so/pricing]
-- ...
+## 2. Key Facts Layer
 
-### 🟡 Inferred Assumptions
-- Churn ~3-5%/月 (基于 PLG SaaS 行业基准) [INFERRED]
-- ...
+### Verified Facts
 
-### 🔴 Missing Data
-- 实际 CAC 与 LTV [MISSING]
-- ...
+- Pricing includes Free, Plus, Business, and Enterprise tiers. [VERIFIED:notion.so/pricing]
 
-## 3. Stress Test
-- High-priority assumption: 若 Churn 实为 8%+，LTV 折半，整个画布塌
-- Fatal data gap: 没有真实留存数据
-- One-line verdict: Plausible
+### Inferred Assumptions
 
-## 4. Next Steps
-- 想继续深挖: 找 Notion 公开的留存/付费转化数据
-- 想抄商业模式: 抄它的模板/社区飞轮
-- 想攻击: 攻它的 "all-in-one" 反面 — 做垂直深耕的单点工具
+- Expansion likely depends on team-level workspace adoption. [INFERRED]
+
+### Missing Data
+
+- Actual CAC and LTV are not publicly available. [MISSING]
 ```
 
 ---
 
-## 🔍 排错
+## Troubleshooting
 
 **`./install.sh: Permission denied`**
-→ `chmod +x install.sh && ./install.sh`
+
+Run:
+
+```bash
+chmod +x install.sh
+./install.sh
+```
 
 **`python: command not found`**
-→ macOS: `brew install python@3.12`
-→ Linux: `apt install python3.12 python3.12-venv` 或类似
-→ Windows: 从 https://www.python.org/downloads/ 装
+
+Install Python 3.10 or newer from [python.org](https://www.python.org/downloads/), Homebrew, or your system package manager.
 
 **`openbusiness: command not found`**
-→ 如果用了 venv，每次开新终端要先 `source .venv/bin/activate`
 
-**`OPENAI_API_KEY ... is invalid`**
-→ Key 不对或没额度。`openbusiness config --reset` 重输
+If you installed into the virtual environment, activate it first:
 
-**报告全是 [INFERRED]**
-→ 你没配 Tavily/Firecrawl。`openbusiness config --reset` 补上 key
+```bash
+source .venv/bin/activate
+```
 
-**LangGraph 报错 `Could not stream from node`**
-→ 通常是 LLM 端的限速。等 1 分钟重试，或换 deep model 到更便宜的型号
+**Invalid API key or quota errors**
 
----
+Check the key in your provider dashboard, then run:
 
-## 🤝 贡献 / 扩展
+```bash
+openbusiness config --reset
+```
 
-加一个新分析师：
+**The report is mostly `[INFERRED]`**
 
-1. 在 `openbusiness/agents/analysts/` 写 `your_analyst.py`，导出 `create_your_analyst(llm)`
-2. 在 `openbusiness/agents/analysts/__init__.py` 加导出
-3. 在 `openbusiness/graph/setup.py` 把节点插进流水线
+Configure Tavily and Firecrawl so the evidence collector can gather live source material:
 
-加一个新工具：
-
-1. 在 `openbusiness/tools/` 加 `@tool` 装饰的函数
-2. 在某个 analyst 里 `bind_tools([your_tool])`
-3. **返回数据必须带 `[VERIFIED:source]` 或在 key 缺失时返回 `warning` 字段**
+```bash
+openbusiness config --reset
+```
 
 ---
 
-## 📄 License
+## Extending OpenBusiness
+
+To add a new analyst:
+
+1. Create `openbusiness/agents/analysts/your_analyst.py` and export `create_your_analyst(llm)`.
+2. Export it from `openbusiness/agents/analysts/__init__.py`.
+3. Add the node to `openbusiness/graph/setup.py`.
+
+To add a new tool:
+
+1. Add a `@tool` function under `openbusiness/tools/`.
+2. Bind it in the analyst that should use it.
+3. Return source-labeled data, or a warning/missing-data value when credentials are not configured.
+
+---
+
+## License
 
 MIT

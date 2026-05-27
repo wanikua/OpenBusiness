@@ -5,6 +5,8 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from openbusiness.agents.utils.agent_state import AgentState
+from openbusiness.agents.utils.tool_calling import invoke_with_tools
+from openbusiness.language import with_output_language
 from openbusiness.tools.financial_tools import calculate_unit_economics
 
 SYSTEM_PROMPT = """\
@@ -25,10 +27,10 @@ SYSTEM_PROMPT = """\
 - 拒绝拍脑袋出数 — 假设来源说不清的，直接标 [MISSING] 并跳过。
 
 # Output
-- ## 变现模式
-- ## 关键指标 (含每条来源标签)
-- ## Unit Economics 计算 (工具返回的 JSON 摘要)
-- ## 健康度评价 + 风险点
+- ## Monetization Model
+- ## Key Metrics (include source tags)
+- ## Unit Economics Calculation (tool JSON summary)
+- ## Health Assessment + Risks
 """
 
 TOOLS = [calculate_unit_economics]
@@ -38,9 +40,16 @@ def create_unit_econ_analyst(llm):
     agent_llm = llm.bind_tools(TOOLS)
 
     def node(state: AgentState) -> dict:
-        response = agent_llm.invoke(
+        response = invoke_with_tools(
+            agent_llm,
             [
-                SystemMessage(content=SYSTEM_PROMPT),
+                SystemMessage(
+                    content=with_output_language(
+                        SYSTEM_PROMPT,
+                        state.get("output_language"),
+                        "unit_econ_analyst",
+                    )
+                ),
                 HumanMessage(
                     content=(
                         f"目标公司: {state['company_name']} (ticker={state.get('ticker', 'N/A')})\n\n"
@@ -51,7 +60,8 @@ def create_unit_econ_analyst(llm):
                         "请输出单体经济分析。调用 calculate_unit_economics 工具至少一次。"
                     )
                 ),
-            ]
+            ],
+            TOOLS,
         )
         return {"unit_econ_report": response.content, "messages": []}
 

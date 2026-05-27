@@ -1,8 +1,9 @@
 """Config file management for OpenBusiness CLI.
 
 Storage: ~/.config/openbusiness/config.toml (mode 0600).
-Env vars override file values: OPENBUSINESS_PROVIDER, OPENAI_API_KEY,
-ANTHROPIC_API_KEY, TAVILY_API_KEY, FIRECRAWL_API_KEY.
+Env vars override file values: OPENBUSINESS_PROVIDER, OPENBUSINESS_OUTPUT_LANGUAGE,
+OPENAI_API_KEY, ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, TAVILY_API_KEY,
+FIRECRAWL_API_KEY.
 """
 
 from __future__ import annotations
@@ -11,6 +12,8 @@ import os
 import stat
 from pathlib import Path
 from typing import Optional
+
+from openbusiness.language import DEFAULT_OUTPUT_LANGUAGE, normalize_output_language
 
 try:
     import tomllib  # Python 3.11+
@@ -65,15 +68,25 @@ def get(key: str, default: Optional[str] = None) -> Optional[str]:
 
     Mapping:
         provider           → OPENBUSINESS_PROVIDER
+        output_language    → OPENBUSINESS_OUTPUT_LANGUAGE
         openai_api_key     → OPENAI_API_KEY
         anthropic_api_key  → ANTHROPIC_API_KEY
+        deepseek_api_key   → DEEPSEEK_API_KEY
         tavily_api_key     → TAVILY_API_KEY
         firecrawl_api_key  → FIRECRAWL_API_KEY
     """
     env_map = {
         "provider": "OPENBUSINESS_PROVIDER",
+        "output_language": "OPENBUSINESS_OUTPUT_LANGUAGE",
         "openai_api_key": "OPENAI_API_KEY",
         "anthropic_api_key": "ANTHROPIC_API_KEY",
+        "deepseek_api_key": "DEEPSEEK_API_KEY",
+        "deepseek_base_url": "DEEPSEEK_BASE_URL",
+        "deepseek_quick_model": "DEEPSEEK_QUICK_MODEL",
+        "deepseek_deep_model": "DEEPSEEK_DEEP_MODEL",
+        "deepseek_timeout": "DEEPSEEK_TIMEOUT",
+        "deepseek_max_retries": "DEEPSEEK_MAX_RETRIES",
+        "deepseek_max_tokens": "DEEPSEEK_MAX_TOKENS",
         "tavily_api_key": "TAVILY_API_KEY",
         "firecrawl_api_key": "FIRECRAWL_API_KEY",
     }
@@ -91,6 +104,11 @@ def get(key: str, default: Optional[str] = None) -> Optional[str]:
     return default
 
 
+def get_output_language(default: str = DEFAULT_OUTPUT_LANGUAGE) -> str:
+    """Return the configured report output language."""
+    return normalize_output_language(get("output_language", default), default=default)
+
+
 def is_configured() -> bool:
     """True if at least an LLM provider + matching key is available."""
     provider = get("provider")
@@ -100,6 +118,8 @@ def is_configured() -> bool:
         return bool(get("openai_api_key"))
     if provider == "anthropic":
         return bool(get("anthropic_api_key"))
+    if provider == "deepseek":
+        return bool(get("deepseek_api_key"))
     return False
 
 
@@ -108,6 +128,7 @@ def export_to_env() -> None:
     for key, env_var in [
         ("openai_api_key", "OPENAI_API_KEY"),
         ("anthropic_api_key", "ANTHROPIC_API_KEY"),
+        ("deepseek_api_key", "DEEPSEEK_API_KEY"),
         ("tavily_api_key", "TAVILY_API_KEY"),
         ("firecrawl_api_key", "FIRECRAWL_API_KEY"),
     ]:
