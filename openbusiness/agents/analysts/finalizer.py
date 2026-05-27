@@ -11,53 +11,45 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from openbusiness.agents.utils.agent_state import AgentState
 from openbusiness.language import with_output_language
 
+STANDARD_CONTEXT_CHARS = 7000
+DEEP_CONTEXT_CHARS = 14000
+
 SYSTEM_PROMPT = """\
 # Role
-你是 OpenBusiness 的报告整理员 (Finalizer)。
+You are the OpenBusiness Finalizer.
 
 # Task
-把上游的 Canvas 报告和 Stress Test 报告拼成最终的用户报告。**不要重写内容，只做整合与排版。**
+Assemble the upstream Canvas report and Stress Test report into one final
+user-facing Markdown report. Do not invent new evidence. Only organize,
+compress, localize, and lightly normalize wording when needed for language purity.
 
-# Output Structure (严格按此格式)
+# Output Contract
+Use the localized template appended below as the only output structure. It
+overrides any upstream heading language. Output only the final Markdown report;
+do not add an introduction, apology, explanation, or process narration.
 
-# 📊 OpenBusiness Business Model Reverse Engineering Report
-
-**Target:** [公司名] | **Confidence:** [Robust/Plausible/Fragile/Speculative]
-
----
-
-## 1. Business Model Canvas
-[Canvas 报告原文]
-
----
-
-## 2. Key Fact Layers
-### 🟢 Verified Facts
-[从 Canvas 提取所有 [VERIFIED:url] 条目]
-
-### 🟡 Inferred Assumptions
-[从 Canvas 提取所有 [INFERRED] 条目]
-
-### 🔴 Missing Data
-[从 Canvas 提取所有 [MISSING] 条目]
-
----
-
-## 3. Assumption Stress Test
-[Stress Test 报告原文]
-
----
-
-## 4. Next Steps
-Based on the analysis above, give the user 3 actionable recommendations:
-- What data should be collected next to investigate this company more deeply?
-- What is most worth copying if someone wanted to replicate this business model?
-- What is the fatal weakness if someone wanted to enter the same market?
+# Content Requirements
+- Include the target company and a confidence label.
+- Start with a concise executive thesis. It must state the core mechanism, not just a summary.
+- Include a compressed canvas report. Do not paste long upstream sections verbatim when they repeat.
+- Extract and group verified facts, inferred assumptions, and missing data.
+- Include a profit-engine section that explains value creation, value capture, acquisition,
+  retention/expansion, margin structure, and the biggest economic sensitivity.
+- Include a strategic interpretation section with the strongest insight, biggest weakness,
+  likely competitor response, and what would change the conclusion.
+- Include the stress test report.
+- End with three actionable next steps in the requested output language:
+  collect next data, identify what is worth copying, and identify the fatal
+  weakness for a new entrant.
+- Keep the final report dense. Prefer tables and short causal bullets over long prose.
 """
 
 
 def create_finalizer(llm):
     def node(state: AgentState) -> dict:
+        max_chars = DEEP_CONTEXT_CHARS if state.get("analysis_depth") == "deep" else STANDARD_CONTEXT_CHARS
+        canvas_report = state.get("canvas_report", "N/A")[:max_chars]
+        stress_test_report = state.get("stress_test_report", "N/A")[:max_chars]
         response = llm.invoke(
             [
                 SystemMessage(
@@ -70,8 +62,8 @@ def create_finalizer(llm):
                 HumanMessage(
                     content=(
                         f"目标公司: {state['company_name']}\n\n"
-                        f"## Canvas\n{state.get('canvas_report', 'N/A')}\n\n"
-                        f"## Stress Test\n{state.get('stress_test_report', 'N/A')}\n\n"
+                        f"## Canvas\n{canvas_report}\n\n"
+                        f"## Stress Test\n{stress_test_report}\n\n"
                         "请整合输出最终报告。"
                     )
                 ),

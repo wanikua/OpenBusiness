@@ -47,78 +47,122 @@ OUTPUT_TEMPLATES = {
         "en": """\
 - ## Website & Product Facts
 - ## Pricing & Business Model Signals
+- ## Customer Proof And Case Studies
+- ## Hiring / Organization Signals
+- ## Ecosystem And Integration Signals
 - ## News & Strategy Updates
 - ## Founder / Product Philosophy
 - ## Financial Facts (Public Companies)
 - ## Competitive Landscape
+- ## Source Reliability Notes
 - ## Missing Data""",
         "zh": """\
 - ## 官网与产品事实
 - ## 定价与商业模式信号
+- ## 客户证据与案例
+- ## 招聘与组织信号
+- ## 生态与集成信号
 - ## 新闻与战略动态
 - ## 创始人和产品理念
 - ## 财务事实（上市公司）
 - ## 竞争环境
+- ## 来源可靠性说明
 - ## 数据缺口""",
     },
     "jtbd_analyst": {
         "en": """\
 - ## Buyer / Decision Maker
-- ## End User
+- ## End User Segments
 - ## Job To Be Done
-- ## Alternative Behavior""",
+- ## Switching Trigger And Urgency
+- ## Alternative Behavior
+- ## Willingness-To-Pay Signals
+- ## Open Validation Questions""",
         "zh": """\
 - ## 付费者 / 决策者
-- ## 使用者
+- ## 使用者细分
 - ## 待完成任务
-- ## 替代行为""",
+- ## 切换触发点与紧迫性
+- ## 替代行为
+- ## 付费意愿信号
+- ## 待验证问题""",
     },
     "value_prop_analyst": {
         "en": """\
 - ## Core Value
+- ## Before / After Delta
 - ## 10x Better Test
-- ## Value Type""",
+- ## Tradeoffs And Adoption Friction
+- ## Value Type
+- ## Durability Of Value
+- ## Validation Gaps""",
         "zh": """\
 - ## 核心价值
+- ## 使用前后变化
 - ## 十倍优势测试
-- ## 价值类型""",
+- ## 取舍与采用阻力
+- ## 价值类型
+- ## 价值可持续性
+- ## 验证缺口""",
     },
     "gtm_analyst": {
         "en": """\
 - ## Primary Channels
 - ## Secondary Channels
-- ## Evidence Signals
+- ## Channel Evidence Matrix
+- ## Sales Motion And ICP
+- ## Growth Loop Hypothesis
+- ## Channel Economics
 - ## Channel Risks""",
         "zh": """\
 - ## 主渠道
 - ## 次渠道
-- ## 证据信号
+- ## 渠道证据矩阵
+- ## 销售动作与理想客户画像
+- ## 增长飞轮假设
+- ## 渠道经济性
 - ## 渠道风险""",
     },
     "unit_econ_analyst": {
         "en": """\
 - ## Monetization Model
 - ## Key Metrics
+- ## Scenario Assumptions
 - ## Unit Economics Calculation
-- ## Health Assessment And Risks""",
+- ## Sensitivity Analysis
+- ## Health Assessment And Risks
+- ## Data That Would Change The Conclusion""",
         "zh": """\
 - ## 变现模式
 - ## 关键指标
+- ## 情景假设
 - ## 单体经济计算
-- ## 健康度评价与风险""",
+- ## 敏感性分析
+- ## 健康度评价与风险
+- ## 可能改变结论的数据""",
     },
     "moat_analyst": {
         "en": """\
 - ## Five Moat Ratings
+- ## Competitor Map
+- ## Strongest Moat And Weakest Link
 - ## Key Competitive Threats
-- ## Counter-Positioning Analysis""",
+- ## Counter-Positioning Analysis
+- ## Time-Decay Risk
+- ## Tests To Validate The Moat""",
         "zh": """\
 - ## 五类壁垒评级
+- ## 竞争者地图
+- ## 最强壁垒与最弱环节
 - ## 关键竞争威胁
-- ## 反向定位分析""",
+- ## 反向定位分析
+- ## 时间衰减风险
+- ## 壁垒验证测试""",
     },
     "synthesizer": {
         "en": """\
+## Strategic Thesis
+
 ## Business Model Canvas
 
 | Key Partners | Key Activities | Value Propositions | Customer Relationships | Customer Segments |
@@ -130,12 +174,17 @@ OUTPUT_TEMPLATES = {
 | :--- | :--- |
 | ... | ... |
 
+## Profit Engine
+## Causal Chain
 ## Unit Economics Snapshot
 ## Moat Snapshot
+## Non-Obvious Insights
 ## Verified Facts
 ## Inferred Assumptions
 ## Missing Data""",
         "zh": """\
+## 战略判断
+
 ## 商业模式画布
 
 | 核心伙伴 | 关键业务 | 价值主张 | 客户关系 | 客户细分 |
@@ -147,8 +196,11 @@ OUTPUT_TEMPLATES = {
 | :--- | :--- |
 | ... | ... |
 
+## 利润引擎
+## 因果链条
 ## 单体经济快照
 ## 护城河快照
+## 非显而易见洞察
 ## 已验证事实
 ## 推断假设
 ## 数据缺口""",
@@ -159,9 +211,12 @@ OUTPUT_TEMPLATES = {
 - Assumption: ...
   - Falsification condition: ...
   - Failure chain: ...
+  - Leading indicator: ...
   - Priority: High
 
 ## Medium-Priority Assumptions
+## Scenario Reversal Table
+## Early Warning Indicators
 ## Critical Data Gaps
 ## One-Line Verdict""",
         "zh": """\
@@ -169,9 +224,12 @@ OUTPUT_TEMPLATES = {
 - 假设：...
   - 证伪条件：...
   - 失效连锁：...
+  - 先行指标：...
   - 优先级：High
 
 ## 中优先级假设
+## 情景反转表
+## 早期预警指标
 ## 关键数据缺口
 ## 一句话结论""",
     },
@@ -181,25 +239,31 @@ OUTPUT_TEMPLATES = {
 
 **Target:** [company] | **Confidence:** [Robust/Plausible/Fragile/Speculative]
 
-## 1. Business Model Canvas
-## 2. Key Fact Layers
+## 1. Executive Thesis
+## 2. Business Model Canvas
+## 3. Key Fact Layers
 ### Verified Facts
 ### Inferred Assumptions
 ### Missing Data
-## 3. Assumption Stress Test
-## 4. Next Steps""",
+## 4. Profit Engine
+## 5. Strategic Interpretation
+## 6. Assumption Stress Test
+## 7. Next Steps""",
         "zh": """\
 # OpenBusiness 商业模式逆向工程报告
 
 **分析对象：**[公司名] | **可信度：**[Robust/Plausible/Fragile/Speculative]
 
-## 1. 商业模式画布
-## 2. 关键事实分层
+## 1. 核心判断
+## 2. 商业模式画布
+## 3. 关键事实分层
 ### 已验证事实
 ### 推断假设
 ### 数据缺口
-## 3. 假设压力测试
-## 4. 下一步建议""",
+## 4. 利润引擎
+## 5. 战略解读
+## 6. 假设压力测试
+## 7. 下一步建议""",
     },
 }
 
@@ -241,10 +305,42 @@ def ui_text(language: Optional[str], key: str) -> str:
     return UI_TEXT[normalized][key]
 
 
+def analytical_depth_instruction(language: Optional[str]) -> str:
+    """Prompt fragment that raises the analytical depth bar."""
+    normalized = normalize_output_language(language)
+    if normalized == "en":
+        return (
+            "# Analytical Depth Standard\n"
+            "Do not stop at classification, summary, or generic best-practice language. "
+            "Every major conclusion must include: (1) the mechanism that makes it true, "
+            "(2) the evidence quality behind it, (3) the countercase that could make it false, "
+            "(4) the business-model implication, and (5) the next validation data required. "
+            "Prefer causal chains, quantified ranges, scenario comparisons, and named tradeoffs. "
+            "When data is missing, state how sensitive the conclusion is to that missing data "
+            "instead of filling the gap with a confident guess. Depth is not length: use "
+            "2-4 high-signal bullets per section, avoid restating upstream text, and prioritize "
+            "the few drivers that can change the conclusion."
+        )
+    return (
+        "# 分析深度标准\n"
+        "不要停留在分类、摘要或通用套话。每个重要结论都必须说明："
+        "（1）结论成立的机制，（2）背后的证据强度，（3）可能推翻它的反例，"
+        "（4）对商业模式的影响，（5）下一步需要验证的数据。优先输出因果链条、"
+        "量化区间、情景对比和明确取舍。数据缺失时，要说明结论对该数据的敏感度，"
+        "不要用自信猜测填补缺口。深度不是篇幅：每节使用 2-4 条高信号要点，"
+        "避免复述上游原文，优先写出少数真正会改变结论的驱动因素。"
+    )
+
+
 def output_language_instruction(language: Optional[str]) -> str:
     """Prompt fragment that makes the requested report language explicit."""
     normalized = normalize_output_language(language)
     name = output_language_name(normalized)
+    output_discipline = (
+        " Output only the requested Markdown content. Do not include preambles, "
+        "meta commentary, tool-use narration, or sentences such as 'Okay', '好的', "
+        "'I will now', or 'Here is'."
+    )
     if normalized == "en":
         return (
             "# Output Language\n"
@@ -256,6 +352,7 @@ def output_language_instruction(language: Optional[str]) -> str:
             "[INFERRED], and [MISSING] unchanged. Do not mix Chinese into the output "
             "unless it appears inside quoted source evidence. Translate any upstream Chinese "
             "headings or prose into English before final output."
+            f"{output_discipline}"
         )
     return (
         "# Output Language\n"
@@ -266,6 +363,7 @@ def output_language_instruction(language: Optional[str]) -> str:
         "standard metric abbreviations such as ARPU, LTV, CAC, LTV/CAC, PLG, API/tool/model "
         "names, numeric values, and evidence tags such as [VERIFIED:url], [INFERRED], and "
         "[MISSING] unchanged."
+        f"{output_discipline}"
     )
 
 
@@ -275,7 +373,11 @@ def with_output_language(
     template_key: Optional[str] = None,
 ) -> str:
     """Append the output-language contract to an agent system prompt."""
-    prompt = f"{system_prompt.rstrip()}\n\n{output_language_instruction(language)}"
+    prompt = (
+        f"{system_prompt.rstrip()}\n\n"
+        f"{analytical_depth_instruction(language)}\n\n"
+        f"{output_language_instruction(language)}"
+    )
     if template_key:
         prompt += (
             "\n\n# Required Localized Output Template\n"

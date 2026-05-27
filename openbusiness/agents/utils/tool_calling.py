@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from concurrent.futures import ThreadPoolExecutor
 from collections.abc import Sequence
 from typing import Any
 
@@ -19,27 +20,29 @@ def invoke_with_tools(llm, messages: list, tools: Sequence, max_rounds: int = 4)
     tools_by_name = {tool.name: tool for tool in tools}
     response = llm.invoke(messages)
 
+    def run_tool_call(call: dict[str, Any]) -> ToolMessage:
+        name = call.get("name")
+        args: dict[str, Any] = call.get("args") or {}
+        tool_call_id = call.get("id")
+        tool = tools_by_name.get(name)
+
+        if tool is None:
+            result = json.dumps({"error": f"Unknown tool: {name}"}, ensure_ascii=False)
+        else:
+            try:
+                result = tool.invoke(args)
+            except Exception as exc:
+                result = json.dumps({"error": str(exc), "tool": name}, ensure_ascii=False)
+
+        return ToolMessage(content=str(result), tool_call_id=tool_call_id)
+
     for _ in range(max_rounds):
         tool_calls = getattr(response, "tool_calls", None) or []
         if not tool_calls:
             return response
 
-        tool_messages = []
-        for call in tool_calls:
-            name = call.get("name")
-            args: dict[str, Any] = call.get("args") or {}
-            tool_call_id = call.get("id")
-            tool = tools_by_name.get(name)
-
-            if tool is None:
-                result = json.dumps({"error": f"Unknown tool: {name}"}, ensure_ascii=False)
-            else:
-                try:
-                    result = tool.invoke(args)
-                except Exception as exc:
-                    result = json.dumps({"error": str(exc), "tool": name}, ensure_ascii=False)
-
-            tool_messages.append(ToolMessage(content=str(result), tool_call_id=tool_call_id))
+        with ThreadPoolExecutor(max_workers=min(len(tool_calls), 6)) as executor:
+            tool_messages = list(executor.map(run_tool_call, tool_calls))
 
         messages = [
             *messages,

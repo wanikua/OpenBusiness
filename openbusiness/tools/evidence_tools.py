@@ -23,7 +23,7 @@ def _firecrawl_key() -> Optional[str]:
 
 
 @tool
-def tavily_search(query: str, max_results: int = 5) -> str:
+def tavily_search(query: str, max_results: int = 5, search_depth: str = "basic") -> str:
     """Search the public web for company facts via Tavily.
 
     Use for: pricing pages, press releases, founder interviews, recent news,
@@ -33,6 +33,7 @@ def tavily_search(query: str, max_results: int = 5) -> str:
     Args:
         query: Search query — be specific (e.g. 'Notion pricing tiers 2025').
         max_results: How many results (1-10).
+        search_depth: Tavily search depth. Use "advanced" for deeper research.
 
     Returns:
         JSON list of {title, url, content, source_tag} dicts.
@@ -49,10 +50,11 @@ def tavily_search(query: str, max_results: int = 5) -> str:
         )
 
     try:
+        depth = "advanced" if search_depth == "advanced" else "basic"
         resp = requests.post(
             "https://api.tavily.com/search",
-            json={"api_key": key, "query": query, "max_results": min(max_results, 10), "search_depth": "basic"},
-            timeout=30,
+            json={"api_key": key, "query": query, "max_results": min(max_results, 10), "search_depth": depth},
+            timeout=20,
         )
         resp.raise_for_status()
         data = resp.json()
@@ -60,7 +62,7 @@ def tavily_search(query: str, max_results: int = 5) -> str:
             {
                 "title": r.get("title", ""),
                 "url": r.get("url", ""),
-                "content": r.get("content", "")[:500],
+                "content": r.get("content", "")[:900],
                 "source_tag": f"[VERIFIED:{r.get('url', '')}]",
             }
             for r in data.get("results", [])
@@ -100,11 +102,11 @@ def firecrawl_scrape(url: str) -> str:
             "https://api.firecrawl.dev/v1/scrape",
             headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
             json={"url": url, "formats": ["markdown"], "onlyMainContent": True},
-            timeout=60,
+            timeout=35,
         )
         resp.raise_for_status()
         data = resp.json()
-        markdown = data.get("data", {}).get("markdown", "")[:8000]
+        markdown = data.get("data", {}).get("markdown", "")[:12000]
         return json.dumps(
             {"url": url, "source_tag": f"[VERIFIED:{url}]", "content": markdown},
             ensure_ascii=False,

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">OpenBusiness terminal demo</title>
+  <desc id="desc">A terminal-style screenshot showing an OpenBusiness analysis run and pipeline stages.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111827"/>
+      <stop offset="0.55" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#0b1220"/>
+    </linearGradient>
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="720" fill="#f4f7fb"/>
+  <rect x="64" y="54" width="1072" height="612" rx="18" fill="url(#bg)" filter="url(#shadow)"/>
+  <rect x="64" y="54" width="1072" height="54" rx="18" fill="#0a0f1d"/>
+  <rect x="64" y="92" width="1072" height="16" fill="#0a0f1d"/>
+  <circle cx="101" cy="81" r="8" fill="#ff5f57"/>
+  <circle cx="127" cy="81" r="8" fill="#ffbd2e"/>
+  <circle cx="153" cy="81" r="8" fill="#28c840"/>
+  <text x="600" y="87" fill="#94a3b8" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="15" text-anchor="middle">openbusiness demo</text>
+
+  <text x="104" y="151" fill="#38bdf8" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="20">$</text>
+  <text x="134" y="151" fill="#e5e7eb" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="20">openbusiness analyze "Notion" --domain notion.so --language zh --depth deep</text>
+
+  <rect x="104" y="186" width="992" height="86" rx="10" fill="#111827" stroke="#263449"/>
+  <text x="132" y="219" fill="#cbd5e1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16">Business Model Reverse Engineering</text>
+  <text x="132" y="248" fill="#94a3b8" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="15">Target: Notion (notion.so)</text>
+  <text x="432" y="248" fill="#94a3b8" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="15">Output language: Simplified Chinese</text>
+  <text x="842" y="248" fill="#22c55e" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="15">depth: deep</text>
+
+  <g font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="17">
+    <text x="128" y="318" fill="#22c55e">[done]</text>
+    <text x="222" y="318" fill="#e5e7eb">Evidence Collector</text>
+    <text x="516" y="318" fill="#94a3b8">Tavily search + Firecrawl scrape + SEC facts</text>
+
+    <text x="128" y="358" fill="#22c55e">[done]</text>
+    <text x="222" y="358" fill="#e5e7eb">JTBD Analyst</text>
+    <text x="516" y="358" fill="#94a3b8">buyer, user, job, alternatives</text>
+
+    <text x="128" y="398" fill="#22c55e">[done]</text>
+    <text x="222" y="398" fill="#e5e7eb">Value Prop Analyst</text>
+    <text x="516" y="398" fill="#94a3b8">core value and 10x-better test</text>
+
+    <text x="128" y="438" fill="#22c55e">[done]</text>
+    <text x="222" y="438" fill="#e5e7eb">GTM Analyst</text>
+    <text x="516" y="438" fill="#94a3b8">channels, loops, risks</text>
+
+    <text x="128" y="478" fill="#22c55e">[done]</text>
+    <text x="222" y="478" fill="#e5e7eb">Unit Economics Analyst</text>
+    <text x="516" y="478" fill="#94a3b8">LTV, CAC, payback, confidence</text>
+
+    <text x="128" y="518" fill="#22c55e">[done]</text>
+    <text x="222" y="518" fill="#e5e7eb">Moat Analyst</text>
+    <text x="516" y="518" fill="#94a3b8">network effects, switching costs, brand, scale</text>
+
+    <text x="128" y="558" fill="#22c55e">[done]</text>
+    <text x="222" y="558" fill="#e5e7eb">Synthesizer + Stress Tester + Finalizer</text>
+    <text x="644" y="558" fill="#94a3b8">Markdown report with evidence labels</text>
+  </g>
+
+  <rect x="104" y="592" width="992" height="44" rx="10" fill="#06281b" stroke="#14532d"/>
+  <text x="132" y="620" fill="#bbf7d0" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16">Report generated: output/notion_business_model.md</text>
+  <text x="782" y="620" fill="#86efac" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16">[VERIFIED] [INFERRED] [MISSING]</text>
+</svg>

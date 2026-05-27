@@ -1,243 +1,40 @@
 # OpenBusiness
 
-> **AI-driven, evidence-first business model reverse engineering.** Give OpenBusiness a company name and it produces a structured business model canvas report with clear fact, inference, and missing-data labels.
+> Evidence-first AI business model reverse engineering.
 
-OpenBusiness is inspired by [TradingAgents](https://github.com/TauricResearch/TradingAgents), but it intentionally does not copy the bull-vs-bear debate structure. Business analysis should produce a structured decomposition, not a buy/sell vote.
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![LangGraph](https://img.shields.io/badge/Built%20with-LangGraph-1f2937?style=flat-square)](https://www.langchain.com/langgraph)
+[![Reports](https://img.shields.io/badge/Output-English%20%7C%20zh-0f766e?style=flat-square)](#bilingual-output)
+[![License](https://img.shields.io/badge/License-MIT-black?style=flat-square)](#license)
 
----
+OpenBusiness turns a company name into a structured business model report. It
+collects evidence from the web, runs specialized analyst agents, builds a
+business model canvas, stress-tests assumptions, and labels each claim as
+verified, inferred, or missing.
 
-## What It Does
+It is inspired by [TradingAgents](https://github.com/TauricResearch/TradingAgents),
+but OpenBusiness is not a bull-vs-bear debate system. Business model analysis
+needs decomposition, evidence tracking, and assumption pressure-testing, not a
+buy/sell vote.
 
-```bash
-$ openbusiness analyze "Notion" --domain notion.so --language en
+![OpenBusiness terminal demo](docs/assets/openbusiness-terminal-demo.svg)
 
-  🔍 Evidence Collector         (Tavily + Firecrawl + SEC EDGAR evidence gathering)
-  👥 JTBD Analyst               (who pays, who uses it, and what job gets done)
-  💎 Value Prop Analyst         (10x-better test)
-  🚀 GTM Analyst                (PLG, sales-led, marketplace, community, and more)
-  💰 Unit Economics Analyst     (LTV, CAC, break-even math)
-  🛡️ Moat Analyst               (five moat types, Porter forces, counter-positioning)
-  🧱 Business Model Synthesizer (business model canvas)
-  🔬 Assumption Stress Tester   (which assumptions can break the canvas)
-  📝 Finalizer                  (final Markdown report)
+![OpenBusiness report preview](docs/assets/openbusiness-report-preview.svg)
 
-✅ Report generated: output/notion_business_model.md
-```
+## Highlights
 
-Every claim is tagged:
+- Multi-agent business analysis pipeline built with LangGraph.
+- Evidence collection through Tavily search, Firecrawl scraping, and SEC EDGAR.
+- Business model canvas output with explicit evidence labels.
+- Bilingual report generation with `--language en` and `--language zh`.
+- Provider support for OpenAI, Anthropic, and DeepSeek.
+- Local config wizard with hidden API-key input and `0600` config permissions.
+- Language-purity warnings when generated reports mix output languages.
+- Pure Markdown reports that can be archived, edited, or shared directly.
 
-- `[VERIFIED:url]` means the claim has a source.
-- `[INFERRED]` means the LLM inferred it from context.
-- `[MISSING]` means the data is missing and affects confidence.
+## What It Produces
 
----
-
-## Install In 5 Minutes
-
-### Step 1: Clone The Repository
-
-```bash
-git clone https://github.com/wanikua/OpenBusiness.git
-cd OpenBusiness
-```
-
-### Step 2: Run The Installer
-
-```bash
-./install.sh
-```
-
-The installer is interactive and does four things:
-
-1. Checks that Python 3.10 or newer is available.
-2. Creates a `.venv/` virtual environment if you approve it.
-3. Installs the package with `pip install -e .`.
-4. Starts the configuration wizard for API keys and default report language.
-
-### Step 3: Configure API Keys
-
-The wizard asks for:
-
-| Prompt | What To Enter |
-| --- | --- |
-| `LLM provider [openai/anthropic/deepseek]` | Choose one provider. OpenAI is the default. |
-| `Report output language [zh/en]` | Choose `zh` for Simplified Chinese reports or `en` for English reports. |
-| `OpenAI API Key (sk-...)` or `Anthropic API Key (sk-ant-...)` | Required. Create one at [platform.openai.com/api-keys](https://platform.openai.com/api-keys) or [console.anthropic.com](https://console.anthropic.com/). Input is hidden. |
-| `Tavily API Key` | Optional. Adds web search evidence from [tavily.com](https://tavily.com). |
-| `Firecrawl API Key` | Optional. Adds page scraping from [firecrawl.dev](https://firecrawl.dev). |
-
-If Tavily or Firecrawl is not configured, the pipeline still runs, but more findings will be marked `[INFERRED]` because less live evidence is available.
-
-Configuration is saved to `~/.config/openbusiness/config.toml` with `0600` permissions.
-
-### Step 4: Run Your First Analysis
-
-```bash
-source .venv/bin/activate
-openbusiness analyze "Notion" --domain notion.so --language en
-```
-
-The report is written to `output/notion_business_model.md`.
-
----
-
-## CLI Usage
-
-```bash
-openbusiness config                         # Run the setup wizard
-openbusiness config --reset                 # Re-enter all keys
-openbusiness config --language en           # Set the default report language
-openbusiness show                           # Show current config without full keys
-
-openbusiness analyze "Notion" --domain notion.so
-openbusiness analyze "Costco" --ticker COST
-openbusiness analyze "Vercel" --domain vercel.com --output reports/
-openbusiness analyze "Notion" --domain notion.so --language en
-openbusiness analyze "Notion" --domain notion.so --language zh
-```
-
-Analyze options:
-
-- `--domain / -d`: official website domain, used by the evidence collector.
-- `--ticker / -t`: US stock ticker, used for SEC EDGAR data when available.
-- `--output / -o`: report output directory. Defaults to `output/`.
-- `--language / -l`: report output language. Supported values are `zh` and `en`. This overrides config and environment variables for the current run.
-
----
-
-## Configuration And Environment Variables
-
-Environment variables always override the config file. This is useful for CI, containers, and temporary key or language switches.
-
-```bash
-export OPENBUSINESS_PROVIDER=deepseek
-export OPENBUSINESS_OUTPUT_LANGUAGE=en
-export DEEPSEEK_API_KEY=sk-xxx
-export DEEPSEEK_TIMEOUT=60
-export DEEPSEEK_MAX_RETRIES=1
-export DEEPSEEK_MAX_TOKENS=2048
-export TAVILY_API_KEY=tvly-xxx
-export FIRECRAWL_API_KEY=fc-xxx
-
-openbusiness analyze "Notion" --domain notion.so
-```
-
-Report language precedence:
-
-1. `openbusiness analyze --language en`
-2. `OPENBUSINESS_OUTPUT_LANGUAGE=en`
-3. `output_language = "en"` in `~/.config/openbusiness/config.toml`
-4. Default: `zh`
-
-Language purity:
-
-- `--language en` asks every agent for English-only natural language and warns if the final report contains Chinese characters.
-- `--language zh` asks every agent for Simplified Chinese natural language and warns if the final report contains English section headings or English-like prose lines.
-- Company names, URLs, ticker symbols, metric abbreviations such as ARPU/LTV/CAC/PLG, tool names, and evidence tags are intentionally preserved.
-
----
-
-## Architecture
-
-```text
-User
-  │  company name + optional domain + optional ticker
-  ▼
-┌─────────────────────────────────────┐
-│  Evidence Collector                  │ ← Tavily search + Firecrawl scrape
-│                                      │   + SEC EDGAR public filings
-└────────┬─────────────────────────────┘
-         │  evidence_pack
-         ▼
-┌─────────────────────────────────────┐
-│  JTBD Analyst                        │ ← buyer, user, job, alternatives
-└────────┬─────────────────────────────┘
-         │  jtbd_report
-         ▼
-┌─────────────────────────────────────┐
-│  Value Prop Analyst                  │ ← 10x-better test
-└────────┬─────────────────────────────┘
-         │  value_prop_report
-         ▼
-┌─────────────────────────────────────┐
-│  GTM Analyst                         │ ← distribution and acquisition channels
-└────────┬─────────────────────────────┘
-         │  gtm_report
-         ▼
-┌─────────────────────────────────────┐
-│  Unit Economics Analyst              │ ← LTV/CAC calculation
-└────────┬─────────────────────────────┘
-         │  unit_econ_report
-         ▼
-┌─────────────────────────────────────┐
-│  Moat & Competition Analyst          │ ← five moat types + Porter forces
-└────────┬─────────────────────────────┘
-         │  moat_report
-         ▼
-┌─────────────────────────────────────┐
-│  Business Model Synthesizer          │ ← tagged business model canvas
-└────────┬─────────────────────────────┘
-         │  canvas_report
-         ▼
-┌─────────────────────────────────────┐
-│  Assumption Stress Tester            │ ← fatal assumptions and data gaps
-└────────┬─────────────────────────────┘
-         │  stress_test_report
-         ▼
-┌─────────────────────────────────────┐
-│  Finalizer                           │ ← final report assembly
-└────────┬─────────────────────────────┘
-         ▼
- output/<company>_business_model.md
-```
-
-Core principles:
-
-- **Linear flow, no debate.** The output is a business decomposition, not a vote.
-- **Evidence first.** The pipeline gathers source material before analysis.
-- **Tag every claim.** Claims stay labeled as verified, inferred, or missing.
-- **Tools are pure math.** Unit economics calculations are Python functions, not LLM arithmetic.
-- **Two LLM tiers.** Analyst nodes use a quick model; synthesis and finalization use a deeper model.
-
----
-
-## Project Structure
-
-```text
-OpenBusiness/
-├── install.sh
-├── pyproject.toml
-├── README.md
-├── .env.example
-├── openbusiness/
-│   ├── cli.py
-│   ├── agents/
-│   │   ├── analysts/
-│   │   │   ├── evidence_collector.py
-│   │   │   ├── jtbd_analyst.py
-│   │   │   ├── value_prop_analyst.py
-│   │   │   ├── gtm_analyst.py
-│   │   │   ├── unit_econ_analyst.py
-│   │   │   ├── moat_analyst.py
-│   │   │   ├── synthesizer.py
-│   │   │   ├── stress_tester.py
-│   │   │   └── finalizer.py
-│   │   └── utils/
-│   │       └── agent_state.py
-│   ├── tools/
-│   │   ├── evidence_tools.py
-│   │   └── financial_tools.py
-│   ├── graph/setup.py
-│   ├── language.py
-│   └── llm_clients/
-│       ├── config.py
-│       └── factory.py
-└── output/
-```
-
----
-
-## Report Example
+OpenBusiness writes a final Markdown report with this shape:
 
 ```markdown
 # OpenBusiness Business Model Reverse Engineering Report
@@ -248,9 +45,9 @@ OpenBusiness/
 
 | Key Partners | Key Activities | Value Propositions | Customer Relationships | Customer Segments |
 | --- | --- | --- | --- | --- |
-| ... | ... | All-in-one workspace [VERIFIED:notion.so] | PLG self-serve [INFERRED] | ... |
+| Stripe, AWS, app ecosystem [INFERRED] | Product development, collaboration workflows [VERIFIED:notion.so] | All-in-one workspace [VERIFIED:notion.so] | Self-serve PLG plus enterprise support [INFERRED] | Teams, startups, creators, enterprises [VERIFIED:notion.so] |
 
-## 2. Key Facts Layer
+## 2. Key Fact Layers
 
 ### Verified Facts
 
@@ -262,67 +59,275 @@ OpenBusiness/
 
 ### Missing Data
 
-- Actual CAC and LTV are not publicly available. [MISSING]
+- Actual CAC, gross margin, and cohort retention are not publicly disclosed. [MISSING]
+
+## 3. Assumption Stress Test
+
+## 4. Next Steps
 ```
 
----
+Evidence labels are intentionally visible:
+
+| Label | Meaning |
+| --- | --- |
+| `[VERIFIED:url]` | The claim is supported by a source. |
+| `[INFERRED]` | The claim is a reasoned inference from available context. |
+| `[MISSING]` | The missing data materially affects confidence. |
+
+## Quick Start
+
+### 1. Clone
+
+```bash
+git clone https://github.com/wanikua/OpenBusiness.git
+cd OpenBusiness
+```
+
+### 2. Install
+
+```bash
+./install.sh
+```
+
+The installer checks Python, creates a virtual environment if needed, installs
+the package in editable mode, and starts the configuration wizard.
+
+### 3. Configure
+
+```bash
+openbusiness config
+```
+
+The wizard asks for:
+
+| Setting | Required | Notes |
+| --- | --- | --- |
+| LLM provider | Yes | `openai`, `anthropic`, or `deepseek` |
+| Report language | Yes | `en` or `zh` |
+| Provider API key | Yes | OpenAI, Anthropic, or DeepSeek key |
+| Tavily API key | No | Enables live search evidence |
+| Firecrawl API key | No | Enables page scraping evidence |
+
+Config is saved to `~/.config/openbusiness/config.toml`.
+
+### 4. Run
+
+```bash
+openbusiness analyze "Notion" --domain notion.so --language en
+```
+
+The report is written to `output/notion_business_model.md`.
+
+## CLI
+
+```bash
+openbusiness config
+openbusiness config --reset
+openbusiness config --language en
+openbusiness show
+
+openbusiness analyze "Notion" --domain notion.so
+openbusiness analyze "Costco" --ticker COST
+openbusiness analyze "Vercel" --domain vercel.com --output reports/
+openbusiness analyze "Notion" --domain notion.so --language en
+openbusiness analyze "Notion" --domain notion.so --language zh
+openbusiness analyze "Notion" --domain notion.so --depth deep
+```
+
+Analysis options:
+
+| Option | Description |
+| --- | --- |
+| `--domain`, `-d` | Official company domain for evidence gathering. |
+| `--ticker`, `-t` | Public-company ticker for SEC EDGAR lookup. |
+| `--output`, `-o` | Output directory. Defaults to `output/`. |
+| `--language`, `-l` | Report language for this run. Supports `en` and `zh`. |
+| `--depth` | Research depth. Use `standard` for faster runs or `deep` for broader evidence collection. |
+
+## Environment Variables
+
+Environment variables override local config. They are useful for CI, containers,
+and temporary provider switches.
+
+```bash
+export OPENBUSINESS_PROVIDER=deepseek
+export OPENBUSINESS_OUTPUT_LANGUAGE=en
+export DEEPSEEK_API_KEY=sk-xxx
+export DEEPSEEK_BASE_URL=https://api.deepseek.com
+export DEEPSEEK_TIMEOUT=60
+export DEEPSEEK_MAX_RETRIES=1
+export DEEPSEEK_MAX_TOKENS=2048
+export TAVILY_API_KEY=tvly-xxx
+export FIRECRAWL_API_KEY=fc-xxx
+
+openbusiness analyze "Notion" --domain notion.so
+```
+
+Language precedence:
+
+1. `openbusiness analyze --language en`
+2. `OPENBUSINESS_OUTPUT_LANGUAGE=en`
+3. `output_language = "en"` in local config
+4. Default: `zh`
+
+## Bilingual Output
+
+OpenBusiness supports English and Simplified Chinese report generation:
+
+```bash
+openbusiness analyze "Notion" --domain notion.so --language en
+openbusiness analyze "Notion" --domain notion.so --language zh
+```
+
+The language contract is applied to every analyst node. Final reports also run
+a language-purity check:
+
+- English reports warn if generated content contains Chinese characters.
+- `zh` reports warn if generated content contains English section headings or
+  English-like prose lines.
+- Company names, URLs, tickers, metric abbreviations, API/tool names, model
+  names, and evidence tags are preserved intentionally.
+
+## Depth Mode
+
+Use `--depth deep` when you want a more serious research pass:
+
+```bash
+openbusiness analyze "Notion" --domain notion.so --language zh --depth deep
+```
+
+`standard` keeps evidence collection bounded for faster runs. `deep` lets the
+evidence collector spend more tool rounds and use broader search depth for
+customer proof, hiring signals, ecosystem clues, competitor positioning, and
+negative evidence. All analyst nodes still use the same depth standard: major
+conclusions must include mechanism, evidence quality, countercase, business
+implication, and validation data.
+
+## Pipeline
+
+```text
+Company name + optional domain + optional ticker
+  |
+  v
+Evidence Collector
+  |-- Tavily search
+  |-- Firecrawl scrape
+  |-- SEC EDGAR facts
+  v
+JTBD Analyst
+  v
+Value Proposition Analyst
+  v
+GTM Analyst
+  v
+Unit Economics Analyst
+  v
+Moat Analyst
+  v
+Business Model Synthesizer
+  v
+Assumption Stress Tester
+  v
+Finalizer
+  v
+output/<company>_business_model.md
+```
+
+Core design principles:
+
+- Evidence first: source material is collected before analysis.
+- Claims stay tagged: verified facts, inferred assumptions, and missing data are
+  never flattened into one confidence level.
+- Tools do deterministic work: unit-economics calculations run in Python, not
+  inside model prose.
+- The final output is portable Markdown.
+
+## Providers
+
+| Provider | Config key | Notes |
+| --- | --- | --- |
+| OpenAI | `OPENAI_API_KEY` | Default provider. |
+| Anthropic | `ANTHROPIC_API_KEY` | Supported through LangChain Anthropic. |
+| DeepSeek | `DEEPSEEK_API_KEY` | Uses an OpenAI-compatible endpoint. |
+
+Optional evidence APIs:
+
+| Service | Config key | Purpose |
+| --- | --- | --- |
+| Tavily | `TAVILY_API_KEY` | Web search evidence. |
+| Firecrawl | `FIRECRAWL_API_KEY` | Website and page scraping. |
+
+If Tavily or Firecrawl is not configured, the pipeline still runs, but more
+claims will be marked `[INFERRED]` or `[MISSING]`.
+
+## Project Structure
+
+```text
+OpenBusiness/
+├── install.sh
+├── pyproject.toml
+├── README.md
+├── .env.example
+├── docs/
+│   └── assets/
+│       ├── openbusiness-terminal-demo.svg
+│       └── openbusiness-report-preview.svg
+└── openbusiness/
+    ├── cli.py
+    ├── language.py
+    ├── agents/
+    │   ├── analysts/
+    │   └── utils/
+    ├── graph/
+    ├── llm_clients/
+    └── tools/
+```
+
+## Development
+
+```bash
+python -m pip install -e ".[dev]"
+python -m ruff check openbusiness
+python -m compileall openbusiness
+```
 
 ## Troubleshooting
 
-**`./install.sh: Permission denied`**
-
-Run:
+### `./install.sh: Permission denied`
 
 ```bash
 chmod +x install.sh
 ./install.sh
 ```
 
-**`python: command not found`**
+### `openbusiness: command not found`
 
-Install Python 3.10 or newer from [python.org](https://www.python.org/downloads/), Homebrew, or your system package manager.
-
-**`openbusiness: command not found`**
-
-If you installed into the virtual environment, activate it first:
+Activate the virtual environment used during installation:
 
 ```bash
 source .venv/bin/activate
 ```
 
-**Invalid API key or quota errors**
+### The report is mostly inferred
 
-Check the key in your provider dashboard, then run:
-
-```bash
-openbusiness config --reset
-```
-
-**The report is mostly `[INFERRED]`**
-
-Configure Tavily and Firecrawl so the evidence collector can gather live source material:
+Configure Tavily and Firecrawl so the evidence collector can gather live source
+material:
 
 ```bash
 openbusiness config --reset
 ```
 
----
+### The report language is mixed
 
-## Extending OpenBusiness
+Run with an explicit language override:
 
-To add a new analyst:
+```bash
+openbusiness analyze "Notion" --domain notion.so --language en
+openbusiness analyze "Notion" --domain notion.so --language zh
+```
 
-1. Create `openbusiness/agents/analysts/your_analyst.py` and export `create_your_analyst(llm)`.
-2. Export it from `openbusiness/agents/analysts/__init__.py`.
-3. Add the node to `openbusiness/graph/setup.py`.
-
-To add a new tool:
-
-1. Add a `@tool` function under `openbusiness/tools/`.
-2. Bind it in the analyst that should use it.
-3. Return source-labeled data, or a warning/missing-data value when credentials are not configured.
-
----
+If the warning persists, retry with a model that follows formatting and
+language constraints more strictly.
 
 ## License
 

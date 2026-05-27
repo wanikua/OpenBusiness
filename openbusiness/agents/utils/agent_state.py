@@ -19,6 +19,7 @@ class AgentState(TypedDict):
     domain: str
     ticker: str
     output_language: str       # Report language: "zh" or "en"
+    analysis_depth: str        # Research depth: "standard" or "deep"
 
     evidence_pack: str        # Markdown bundle: pricing, filings, news, scraped snippets
 
