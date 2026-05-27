@@ -5,6 +5,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from openbusiness.agents.utils.agent_state import AgentState
+from openbusiness.agents.utils.prompt_context import with_analysis_context
 from openbusiness.tools.evidence_tools import (
     firecrawl_scrape,
     sec_edgar_company_facts,
@@ -28,9 +29,10 @@ SYSTEM_PROMPT = """\
 4. 招聘页、销售岗位、客户成功岗位、解决方案工程岗位，用来判断销售动作
 5. 集成、API、文档、市场、合作伙伴页，用来判断生态位置
 6. 最近一年的新闻、博客、产品发布、融资或战略更新
-7. 创始人/产品采访 (tavily_search "founder interview product strategy")
-8. 公开财务 (sec_edgar_company_facts — 仅当 ticker 不为空时)
-9. 竞品列表、替代方案、竞品定价、迁移对比页
+7. 融资历史、主要投资人、估值、收购方或母公司关系
+8. 创始人/产品采访 (tavily_search "founder interview product strategy")
+9. 公开财务 (sec_edgar_company_facts — 仅当 ticker 不为空时)
+10. 竞品列表、替代方案、竞品定价、迁移对比页
 
 # Rules
 - 每条事实必须保留 [VERIFIED:<url>] 标签。
@@ -38,6 +40,9 @@ SYSTEM_PROMPT = """\
 - 不要写"我认为/可能/大概"。这一层只搬运事实。
 - 不只收集"公司说自己是什么"，也要收集市场、客户、招聘、竞品给出的外部信号。
 - 每条关键事实后写一句"业务信号"，只说明它会帮助下游判断什么，不做最终结论。
+- 融资/投资人如果能查到，必须列出轮次、金额、投资人、日期和来源；如果查不到，明确标 [MISSING]。
+- 融资阶段必须帮助下游归类为：Pre-Seed / Seed / Series A / Series B / Series C+ / Growth /
+  Public / Bootstrapped / No announced financing plan / Not found。若有最新估值，也必须列出金额、日期和来源。
 
 # Output
 输出一份结构化 Markdown 证据包。每条证据尽量包含：事实、来源、业务信号、可靠性。
@@ -59,23 +64,26 @@ def create_evidence_collector(llm):
             )
             collection_scope = (
                 "至少尝试官网、定价、客户案例/评价、招聘/销售岗位、集成/生态、近期新闻、"
-                "创始人采访、竞品/替代方案这些方向。"
+                "融资/投资人、创始人采访、竞品/替代方案这些方向。"
             )
             max_rounds = 6
         else:
             depth_note = (
                 "标准模式：只采集最高信号来源；优先官网、定价、客户证据、竞品/替代方案和最近新闻。"
             )
-            collection_scope = "不要追求覆盖所有方向；缺失的次要方向直接标 [MISSING]。"
+            collection_scope = "同时尝试融资/投资人查询；不要追求覆盖所有方向，缺失的次要方向直接标 [MISSING]。"
             max_rounds = 3
         response = invoke_with_tools(
             agent_llm,
             [
                 SystemMessage(
-                    content=with_output_language(
-                        SYSTEM_PROMPT,
-                        state.get("output_language"),
-                        "evidence_collector",
+                    content=with_analysis_context(
+                        with_output_language(
+                            SYSTEM_PROMPT,
+                            state.get("output_language"),
+                            "evidence_collector",
+                        ),
+                        state,
                     )
                 ),
                 HumanMessage(

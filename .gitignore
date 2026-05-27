@@ -7,3 +7,4 @@ build/
 .venv/
 output/
 .ruff_cache/
+.DS_Store

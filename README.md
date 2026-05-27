@@ -1,16 +1,19 @@
 # OpenBusiness
 
-> Evidence-first AI business model reverse engineering.
+> Evidence-first AI business model analysis and reverse engineering for founders,
+> investors, consultants, and strategy teams.
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/Built%20with-LangGraph-1f2937?style=flat-square)](https://www.langchain.com/langgraph)
 [![Reports](https://img.shields.io/badge/Output-English%20%7C%20zh-0f766e?style=flat-square)](#bilingual-output)
 [![License](https://img.shields.io/badge/License-MIT-black?style=flat-square)](#license)
 
-OpenBusiness turns a company name into a structured business model report. It
-collects evidence from the web, runs specialized analyst agents, builds a
-business model canvas, stress-tests assumptions, and labels each claim as
-verified, inferred, or missing.
+OpenBusiness is an open-source AI agent CLI for business model analysis,
+competitive research, market research, go-to-market strategy, unit economics,
+and business model canvas generation. Give it a company name, domain, and
+optional stock ticker; it collects evidence from the web, runs specialized
+analyst agents, builds a structured business model canvas, stress-tests
+assumptions, and labels each claim as verified, inferred, or missing.
 
 It is inspired by [TradingAgents](https://github.com/TauricResearch/TradingAgents),
 but OpenBusiness is not a bull-vs-bear debate system. Business model analysis
@@ -25,12 +28,37 @@ buy/sell vote.
 
 - Multi-agent business analysis pipeline built with LangGraph.
 - Evidence collection through Tavily search, Firecrawl scraping, and SEC EDGAR.
-- Business model canvas output with explicit evidence labels.
+- Business model canvas output with explicit evidence labels: known, inferred,
+  or missing.
+- Domain analysis packs for SaaS, public companies, ecommerce, AI
+  infrastructure, consumer apps, and general company research.
+- Audience templates for standard analysis, investor memos, founder copycat
+  studies, and competitor maps.
+- Reproducible run artifacts with stage outputs, source extraction, and run
+  metadata.
 - Bilingual report generation with `--language en` and `--language zh`.
 - Provider support for OpenAI, Anthropic, and DeepSeek.
 - Local config wizard with hidden API-key input and `0600` config permissions.
 - Language-purity warnings when generated reports mix output languages.
 - Pure Markdown reports that can be archived, edited, or shared directly.
+
+## Use Cases
+
+OpenBusiness is useful when you need a structured first-pass business model
+research report before deeper diligence:
+
+| Audience | Common question | OpenBusiness output |
+| --- | --- | --- |
+| Founders | What can I copy, avoid, or attack in this market? | GTM motion, value proposition, moat, and fatal weakness. |
+| Investors | Is the company robust, plausible, fragile, or speculative? | Evidence-labeled thesis, assumptions, and stress test. |
+| Consultants | How does this company actually make money? | Business model canvas, profit engine, and unit economics. |
+| Product teams | Why do customers switch and stay? | JTBD, adoption friction, switching triggers, and alternatives. |
+| Researchers | What data is missing before making a stronger claim? | Missing-data inventory and validation plan. |
+
+Search keywords: AI business model analysis, business model reverse engineering,
+business model canvas generator, AI market research, AI competitive analysis,
+go-to-market analysis, startup analysis, unit economics analysis, LangGraph
+agents, evidence-first research.
 
 ## What It Produces
 
@@ -66,13 +94,24 @@ OpenBusiness writes a final Markdown report with this shape:
 ## 4. Next Steps
 ```
 
-Evidence labels are intentionally visible:
+## Evidence Discipline
+
+The central product principle is simple: know what is known, infer only when the
+evidence supports it, and mark the unknown instead of hiding it.
+
+Evidence labels are intentionally visible and treated as part of the report
+contract:
 
 | Label | Meaning |
 | --- | --- |
 | `[VERIFIED:url]` | The claim is supported by a source. |
 | `[INFERRED]` | The claim is a reasoned inference from available context. |
 | `[MISSING]` | The missing data materially affects confidence. |
+
+This is a feature, not a formatting detail. OpenBusiness keeps these labels
+through collection, analysis, synthesis, stress testing, and finalization.
+Analysis packs and report templates can change the lens of the analysis, but
+they must not remove or soften the evidence labels.
 
 ## Quick Start
 
@@ -89,21 +128,41 @@ cd OpenBusiness
 ./install.sh
 ```
 
-The installer checks Python, creates a virtual environment if needed, installs
-the package in editable mode, and starts the configuration wizard.
+The installer asks you to choose English or Chinese first, checks Python,
+creates a virtual environment if needed, installs the package in editable mode,
+and starts the configuration wizard in the selected language. That first
+language choice becomes the default terminal UI language and the default report
+language for `openbusiness analyze`, unless you explicitly override the report
+language later.
 
-### 3. Configure
+If you accept the default `.venv` setup, the installer activates it for the
+installation session. In every new terminal, activate it again before running
+`openbusiness`:
+
+```bash
+source .venv/bin/activate
+```
+
+If you declined virtual environment creation, skip this activation step and use
+the Python environment where you installed the package.
+
+### 3. Configure Or Reconfigure
 
 ```bash
 openbusiness config
 ```
 
-The wizard asks for:
+The installer normally starts this wizard automatically. Run it manually when
+you skipped the wizard, changed terminals before completing setup, or need to
+update keys later.
+
+The setup stores:
 
 | Setting | Required | Notes |
 | --- | --- | --- |
+| Interface language | Yes | Set by the installer or `openbusiness config --ui-language en`. |
 | LLM provider | Yes | `openai`, `anthropic`, or `deepseek` |
-| Report language | Yes | `en` or `zh` |
+| Report language | Yes | Defaults to the interface language; can be changed with `--language`. |
 | Provider API key | Yes | OpenAI, Anthropic, or DeepSeek key |
 | Tavily API key | No | Enables live search evidence |
 | Firecrawl API key | No | Enables page scraping evidence |
@@ -113,25 +172,36 @@ Config is saved to `~/.config/openbusiness/config.toml`.
 ### 4. Run
 
 ```bash
+source .venv/bin/activate
 openbusiness analyze "Notion" --domain notion.so --language en
 ```
+
+If your shell prompt already shows the virtual environment is active, you do not
+need to run `source .venv/bin/activate` again in the same terminal.
 
 The report is written to `output/notion_business_model.md`.
 
 ## CLI
 
 ```bash
+source .venv/bin/activate
+
 openbusiness config
 openbusiness config --reset
 openbusiness config --language en
+openbusiness config --ui-language en
 openbusiness show
+openbusiness packs
+openbusiness templates
 
 openbusiness analyze "Notion" --domain notion.so
 openbusiness analyze "Costco" --ticker COST
 openbusiness analyze "Vercel" --domain vercel.com --output reports/
 openbusiness analyze "Notion" --domain notion.so --language en
 openbusiness analyze "Notion" --domain notion.so --language zh
+openbusiness analyze "Notion" --domain notion.so --ui-language en --language zh
 openbusiness analyze "Notion" --domain notion.so --depth deep
+openbusiness analyze "Vercel" --domain vercel.com --pack saas --template investor-memo
 ```
 
 Analysis options:
@@ -142,7 +212,17 @@ Analysis options:
 | `--ticker`, `-t` | Public-company ticker for SEC EDGAR lookup. |
 | `--output`, `-o` | Output directory. Defaults to `output/`. |
 | `--language`, `-l` | Report language for this run. Supports `en` and `zh`. |
+| `--ui-language` | Terminal interface language for this run. If `--language` is omitted, the report follows the resolved interface language by default. |
 | `--depth` | Research depth. Use `standard` for faster runs or `deep` for broader evidence collection. |
+| `--pack` | Built-in analysis pack id. Run `openbusiness packs` to list options. |
+| `--pack-file` | Custom analysis pack TOML file. |
+| `--template` | Built-in report template id. Run `openbusiness templates` to list options. |
+| `--template-file` | Custom report template Markdown file with TOML front matter. |
+
+`openbusiness analyze` does not ask for language choices at startup. The
+terminal UI language comes from install/config, and the report language follows
+that UI language unless you explicitly set `--language`, `OPENBUSINESS_OUTPUT_LANGUAGE`,
+or `openbusiness config --language`.
 
 ## Environment Variables
 
@@ -151,6 +231,7 @@ and temporary provider switches.
 
 ```bash
 export OPENBUSINESS_PROVIDER=deepseek
+export OPENBUSINESS_UI_LANGUAGE=en
 export OPENBUSINESS_OUTPUT_LANGUAGE=en
 export DEEPSEEK_API_KEY=sk-xxx
 export DEEPSEEK_BASE_URL=https://api.deepseek.com
@@ -163,12 +244,88 @@ export FIRECRAWL_API_KEY=fc-xxx
 openbusiness analyze "Notion" --domain notion.so
 ```
 
-Language precedence:
+Interface language precedence:
+
+1. `openbusiness analyze --ui-language en`
+2. `OPENBUSINESS_UI_LANGUAGE=en`
+3. `ui_language = "en"` in local config
+4. Default: `zh`
+
+Report language precedence:
 
 1. `openbusiness analyze --language en`
 2. `OPENBUSINESS_OUTPUT_LANGUAGE=en`
 3. `output_language = "en"` in local config
-4. Default: `zh`
+4. Resolved interface language
+
+## Analysis Packs And Templates
+
+Analysis packs make the pipeline more domain-aware without hard-coding every
+company into one generic prompt. Built-in packs include:
+
+| Pack | Use it for |
+| --- | --- |
+| `general` | Default company research when the model is unclear or mixed. |
+| `saas` | Subscription software, PLG, sales-led SaaS, and B2B software. |
+| `public-company` | Listed companies where filings, segments, and margins matter. |
+| `ecommerce` | DTC, marketplace, retail commerce, and product businesses. |
+| `ai-infra` | Developer tools, model platforms, data tooling, and AI infrastructure. |
+| `consumer-app` | Consumer, prosumer, creator, media, and community products. |
+
+Report templates change the reader lens:
+
+| Template | Use it for |
+| --- | --- |
+| `standard` | General OpenBusiness report. |
+| `investor-memo` | First-pass diligence, business quality, and downside risk. |
+| `founder-copycat` | What to copy, avoid, attack, or validate as a new entrant. |
+| `competitor-map` | Alternatives, likely competitive response, and positioning. |
+
+Examples:
+
+```bash
+openbusiness packs
+openbusiness templates
+openbusiness analyze "Vercel" --domain vercel.com --pack saas --template investor-memo
+openbusiness analyze "Costco" --ticker COST --pack public-company
+```
+
+Custom packs are TOML files with `id`, `name`, `description`,
+`evidence_focus`, and `analyst_focus`. Custom templates are Markdown files with
+TOML front matter. Both are prompt guidance only: they cannot bypass evidence
+labels or turn missing data into verified facts.
+
+## Run Artifacts
+
+Each run keeps the existing portable report path:
+
+```text
+output/<company>_business_model.md
+```
+
+It also writes a reproducible artifact folder:
+
+```text
+output/<company>/
+├── report.<language>.md
+├── run.json
+├── evidence.json
+├── sources.md
+└── stages/
+    ├── 01_evidence.md
+    ├── 02_jtbd.md
+    ├── 03_value_prop.md
+    ├── 04_gtm.md
+    ├── 05_unit_econ.md
+    ├── 06_moat.md
+    ├── 07_canvas.md
+    ├── 08_stress_test.md
+    └── 09_final.md
+```
+
+This makes reports easier to debug, compare, and improve. If a conclusion feels
+too shallow, inspect the stage files to see whether the weakness came from
+missing evidence, weak inference, or final-report compression.
 
 ## Bilingual Output
 
@@ -177,7 +334,12 @@ OpenBusiness supports English and Simplified Chinese report generation:
 ```bash
 openbusiness analyze "Notion" --domain notion.so --language en
 openbusiness analyze "Notion" --domain notion.so --language zh
+openbusiness analyze "Notion" --domain notion.so --ui-language en --language zh
 ```
+
+Without `--language`, the report follows the terminal UI language selected
+during installation or configuration. Use `--language` when you want the UI and
+report languages to be different.
 
 The language contract is applied to every analyst node. Final reports also run
 a language-purity check:
@@ -231,6 +393,7 @@ Assumption Stress Tester
 Finalizer
   v
 output/<company>_business_model.md
+output/<company>/run.json + stage artifacts
 ```
 
 Core design principles:
@@ -241,6 +404,8 @@ Core design principles:
 - Tools do deterministic work: unit-economics calculations run in Python, not
   inside model prose.
 - The final output is portable Markdown.
+- Analysis packs and templates can change the lens, but the evidence-label
+  contract stays fixed.
 
 ## Providers
 
@@ -267,14 +432,26 @@ OpenBusiness/
 ├── install.sh
 ├── pyproject.toml
 ├── README.md
+├── LICENSE
+├── CONTRIBUTING.md
+├── llms.txt
 ├── .env.example
 ├── docs/
+│   ├── PROMOTION.md
+│   ├── EXTENDING.md
 │   └── assets/
 │       ├── openbusiness-terminal-demo.svg
 │       └── openbusiness-report-preview.svg
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 └── openbusiness/
     ├── cli.py
     ├── language.py
+    ├── profiles.py
+    ├── resources/
+    │   ├── packs/
+    │   └── templates/
     ├── agents/
     │   ├── analysts/
     │   └── utils/
@@ -289,7 +466,43 @@ OpenBusiness/
 python -m pip install -e ".[dev]"
 python -m ruff check openbusiness
 python -m compileall openbusiness
+bash -n install.sh
+python -m openbusiness.cli packs
+python -m openbusiness.cli templates
 ```
+
+Supply-chain and release hygiene:
+
+- CI installs from the checked-out package and runs lint, compile, installer
+  syntax, resource smoke tests, and the README English-only check.
+- Runtime resources are packaged through `pyproject.toml` package data instead
+  of fetched dynamically at install time.
+- Generated output, local config, API keys, and virtual environments must stay
+  out of commits.
+- README and top-level metadata stay English-only for GitHub and package-index
+  readability.
+
+## Community
+
+OpenBusiness is meant to be co-built with people who care about better business
+research. The goal is not only to ship an AI agent demo, but to build a shared
+open-source workflow for evidence-labeled company analysis.
+
+- Star the repository if OpenBusiness helps your research workflow.
+- Open an issue for bugs, missing providers, report-quality problems, or
+  company-analysis examples that expose weak reasoning.
+- Share real analysis examples that show where the pipeline is shallow, slow, or
+  missing important evidence.
+- Contribute domain packs, report templates, evidence connectors, or better
+  stage prompts when you can show how they improve evidence quality or reasoning
+  depth.
+- Read [CONTRIBUTING.md](CONTRIBUTING.md) before sending a pull request.
+- Use [docs/EXTENDING.md](docs/EXTENDING.md) when adding analysis packs, report
+  templates, or evidence tools.
+- Use [docs/PROMOTION.md](docs/PROMOTION.md) for launch copy, GitHub topic
+  suggestions, and community posting templates.
+- `llms.txt` is available for AI assistants, answer engines, and developer
+  tools that need a compact project summary.
 
 ## Troubleshooting
 
@@ -331,4 +544,5 @@ language constraints more strictly.
 
 ## License
 
-MIT
+OpenBusiness is released under the MIT License. See [LICENSE](LICENSE) for the
+full license text.

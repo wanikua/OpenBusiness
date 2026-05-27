@@ -1,0 +1,17 @@
+id = "ecommerce"
+name = "Ecommerce"
+description = "Analysis pack for DTC brands, marketplaces, retail commerce, and online/offline product businesses."
+
+evidence_focus = [
+  "Product catalog, pricing, bundles, subscriptions, shipping, returns, marketplaces, and retail channels.",
+  "Reviews, social proof, influencer signals, paid acquisition clues, SEO pages, and affiliate programs.",
+  "Supplier, manufacturing, fulfillment, inventory, wholesale, and distribution evidence.",
+  "Unit economics proxies: AOV, repeat purchase, gross margin, fulfillment cost, returns, and CAC signals.",
+]
+
+analyst_focus = [
+  "Separate brand demand, distribution access, supply-chain advantage, and paid media arbitrage.",
+  "Identify whether the model is DTC, marketplace, wholesale, subscription commerce, or mixed.",
+  "Stress-test repeat purchase, inventory risk, return rates, and channel dependency.",
+  "Do not overstate moat from aesthetics or brand awareness without evidence of pricing power or retention.",
+]

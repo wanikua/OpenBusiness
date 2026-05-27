@@ -8,6 +8,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from openbusiness.agents.utils.agent_state import AgentState
+from openbusiness.agents.utils.prompt_context import with_analysis_context
 from openbusiness.language import with_output_language
 
 SYSTEM_PROMPT = """\
@@ -32,9 +33,19 @@ apology, explanation, or process narration.
 - Include the business model canvas tables.
 - Open with a strategic thesis that explains what the business really is, how it captures value,
   and what has to remain true for it to keep working.
+- Include an at-a-glance judgment table for non-specialist readers. It must answer:
+  customer, buyer, end user, ToB/ToC/B2B2C classification, revenue model,
+  current stage, growth outlook, major investors/funding, and one-sentence risk.
+- The at-a-glance table must use explicit classifications, not prose-only labels:
+  funding stage must be one of Pre-Seed, Seed, Series A, Series B, Series C+, Growth,
+  Public, Bootstrapped, No announced financing plan, or Not found; moat verdict must be
+  Strong, Moderate, Weak, or None; outlook must be Strong, Positive, Mixed, Weak, or Unknown.
+  If the requested classification cannot be supported, write Not found or Unknown with [MISSING].
 - Include a unit economics snapshot and moat snapshot.
 - Explain the profit engine: who pays, why they pay, how the company acquires them,
   where gross margin comes from, and what drives expansion or churn.
+- Include funding and investor signals. If funding data is missing, explicitly mark it [MISSING]
+  instead of omitting the topic.
 - Include a causal chain from customer pain to value proposition to channel to monetization to moat.
 - Include 2-3 non-obvious insights. Each insight must say why it matters and what could make it wrong.
 - List verified facts, inferred assumptions, and missing data separately.
@@ -48,10 +59,13 @@ def create_synthesizer(llm):
         response = llm.invoke(
             [
                 SystemMessage(
-                    content=with_output_language(
-                        SYSTEM_PROMPT,
-                        state.get("output_language"),
-                        "synthesizer",
+                    content=with_analysis_context(
+                        with_output_language(
+                            SYSTEM_PROMPT,
+                            state.get("output_language"),
+                            "synthesizer",
+                        ),
+                        state,
                     )
                 ),
                 HumanMessage(

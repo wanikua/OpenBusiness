@@ -1,9 +1,9 @@
 """Config file management for OpenBusiness CLI.
 
 Storage: ~/.config/openbusiness/config.toml (mode 0600).
-Env vars override file values: OPENBUSINESS_PROVIDER, OPENBUSINESS_OUTPUT_LANGUAGE,
-OPENAI_API_KEY, ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, TAVILY_API_KEY,
-FIRECRAWL_API_KEY.
+Env vars override file values: OPENBUSINESS_PROVIDER, OPENBUSINESS_UI_LANGUAGE,
+OPENBUSINESS_OUTPUT_LANGUAGE, OPENAI_API_KEY, ANTHROPIC_API_KEY,
+DEEPSEEK_API_KEY, TAVILY_API_KEY, FIRECRAWL_API_KEY.
 """
 
 from __future__ import annotations
@@ -68,6 +68,7 @@ def get(key: str, default: Optional[str] = None) -> Optional[str]:
 
     Mapping:
         provider           → OPENBUSINESS_PROVIDER
+        ui_language        → OPENBUSINESS_UI_LANGUAGE
         output_language    → OPENBUSINESS_OUTPUT_LANGUAGE
         openai_api_key     → OPENAI_API_KEY
         anthropic_api_key  → ANTHROPIC_API_KEY
@@ -77,6 +78,7 @@ def get(key: str, default: Optional[str] = None) -> Optional[str]:
     """
     env_map = {
         "provider": "OPENBUSINESS_PROVIDER",
+        "ui_language": "OPENBUSINESS_UI_LANGUAGE",
         "output_language": "OPENBUSINESS_OUTPUT_LANGUAGE",
         "openai_api_key": "OPENAI_API_KEY",
         "anthropic_api_key": "ANTHROPIC_API_KEY",
@@ -107,6 +109,11 @@ def get(key: str, default: Optional[str] = None) -> Optional[str]:
 def get_output_language(default: str = DEFAULT_OUTPUT_LANGUAGE) -> str:
     """Return the configured report output language."""
     return normalize_output_language(get("output_language", default), default=default)
+
+
+def get_ui_language(default: str = DEFAULT_OUTPUT_LANGUAGE) -> str:
+    """Return the configured terminal interface language."""
+    return normalize_output_language(get("ui_language", default), default=default)
 
 
 def is_configured() -> bool:

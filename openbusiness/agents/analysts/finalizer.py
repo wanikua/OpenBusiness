@@ -9,6 +9,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from openbusiness.agents.utils.agent_state import AgentState
+from openbusiness.agents.utils.prompt_context import with_analysis_context
 from openbusiness.language import with_output_language
 
 STANDARD_CONTEXT_CHARS = 7000
@@ -31,10 +32,21 @@ do not add an introduction, apology, explanation, or process narration.
 # Content Requirements
 - Include the target company and a confidence label.
 - Start with a concise executive thesis. It must state the core mechanism, not just a summary.
+- Add an at-a-glance judgment section near the top for intuitive reading. It must be a compact
+  table or bullets answering:
+  customer, buyer, end user, ToB/ToC/B2B/B2B2C classification, business model,
+  revenue model, growth outlook, investors/funding, and biggest plain-language risk.
+  If any item is not supported by upstream evidence, include it as [MISSING] instead of skipping it.
+- The at-a-glance section must use explicit verdict fields, not narrative-only prose:
+  funding stage must be one of Pre-Seed, Seed, Series A, Series B, Series C+, Growth,
+  Public, Bootstrapped, No announced financing plan, or Not found; latest valuation must
+  be a number/date/source or Not found; moat verdict must be Strong, Moderate, Weak, or None;
+  outlook must be Strong, Positive, Mixed, Weak, or Unknown.
 - Include a compressed canvas report. Do not paste long upstream sections verbatim when they repeat.
 - Extract and group verified facts, inferred assumptions, and missing data.
 - Include a profit-engine section that explains value creation, value capture, acquisition,
   retention/expansion, margin structure, and the biggest economic sensitivity.
+- Include funding and investor signals in a separate section. Name investors when available.
 - Include a strategic interpretation section with the strongest insight, biggest weakness,
   likely competitor response, and what would change the conclusion.
 - Include the stress test report.
@@ -53,10 +65,13 @@ def create_finalizer(llm):
         response = llm.invoke(
             [
                 SystemMessage(
-                    content=with_output_language(
-                        SYSTEM_PROMPT,
-                        state.get("output_language"),
-                        "finalizer",
+                    content=with_analysis_context(
+                        with_output_language(
+                            SYSTEM_PROMPT,
+                            state.get("output_language"),
+                            "finalizer",
+                        ),
+                        state,
                     )
                 ),
                 HumanMessage(

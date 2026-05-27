@@ -1,0 +1,17 @@
+id = "public-company"
+name = "Public Company"
+description = "Analysis pack for listed companies where filings, segments, margins, and capital allocation matter."
+
+evidence_focus = [
+  "SEC filings, annual reports, segment revenue, gross margin, operating margin, capex, and cash flow.",
+  "Investor presentations, earnings call transcripts, risk factors, and management discussion.",
+  "Customer concentration, geographic exposure, regulatory exposure, and competitive disclosures.",
+  "Capital allocation: buybacks, dividends, debt, acquisitions, and dilution.",
+]
+
+analyst_focus = [
+  "Tie the business model to reported segments and margin structure instead of product marketing.",
+  "Separate revenue quality, cyclicality, operating leverage, and balance-sheet risk.",
+  "Use Public as the funding stage and focus investor signals on shareholder base and capital markets behavior.",
+  "Flag which private-company assumptions are invalid because public financial evidence exists.",
+]

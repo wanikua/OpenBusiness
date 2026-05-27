@@ -52,6 +52,7 @@ OUTPUT_TEMPLATES = {
 - ## Ecosystem And Integration Signals
 - ## News & Strategy Updates
 - ## Founder / Product Philosophy
+- ## Funding And Investors
 - ## Financial Facts (Public Companies)
 - ## Competitive Landscape
 - ## Source Reliability Notes
@@ -64,6 +65,7 @@ OUTPUT_TEMPLATES = {
 - ## 生态与集成信号
 - ## 新闻与战略动态
 - ## 创始人和产品理念
+- ## 融资与投资人
 - ## 财务事实（上市公司）
 - ## 竞争环境
 - ## 来源可靠性说明
@@ -162,6 +164,20 @@ OUTPUT_TEMPLATES = {
     "synthesizer": {
         "en": """\
 ## Strategic Thesis
+## At-a-Glance Verdict
+
+| Field | Verdict | Evidence |
+| :--- | :--- | :--- |
+| Customer | ... | ... |
+| Buyer | ... | ... |
+| User | ... | ... |
+| Market Type | ToB / ToC / B2B / B2C / B2B2C / Marketplace / Developer Platform / Mixed | ... |
+| Business Model | Subscription / Usage-based / Transaction fee / Ads / Services / Hardware / Mixed | ... |
+| Funding Stage | Pre-Seed / Seed / Series A / Series B / Series C+ / Growth / Public / Bootstrapped / No announced financing plan / Not found | ... |
+| Latest Valuation | ... | ... |
+| Moat Verdict | Strong / Moderate / Weak / None | ... |
+| Outlook | Strong / Positive / Mixed / Weak / Unknown | ... |
+| Biggest Risk | ... | ... |
 
 ## Business Model Canvas
 
@@ -175,6 +191,8 @@ OUTPUT_TEMPLATES = {
 | ... | ... |
 
 ## Profit Engine
+## Customer And Market Type
+## Funding And Investor Signals
 ## Causal Chain
 ## Unit Economics Snapshot
 ## Moat Snapshot
@@ -184,6 +202,20 @@ OUTPUT_TEMPLATES = {
 ## Missing Data""",
         "zh": """\
 ## 战略判断
+## 直觉结论卡
+
+| 字段 | 结论 | 证据 |
+| :--- | :--- | :--- |
+| 客户是谁 | ... | ... |
+| 谁付钱 | ... | ... |
+| 谁使用 | ... | ... |
+| 市场类型 | ToB / ToC / B2B / B2C / B2B2C / Marketplace / Developer Platform / Mixed | ... |
+| 商业模式 | 订阅 / 用量计费 / 抽佣 / 广告 / 服务 / 硬件 / 混合 | ... |
+| 融资阶段 | Pre-Seed / Seed / A轮 / B轮 / C轮及以后 / Growth / 已上市 / 自举未融资 / 未有融资计划 / 找不到 | ... |
+| 最新估值 | ... | ... |
+| 护城河判断 | Strong / Moderate / Weak / None | ... |
+| 前景判断 | 强 / 偏强 / 中性或分化 / 偏弱 / 未知 | ... |
+| 最大风险 | ... | ... |
 
 ## 商业模式画布
 
@@ -197,6 +229,8 @@ OUTPUT_TEMPLATES = {
 | ... | ... |
 
 ## 利润引擎
+## 客户与市场类型
+## 融资与投资人信号
 ## 因果链条
 ## 单体经济快照
 ## 护城河快照
@@ -240,30 +274,60 @@ OUTPUT_TEMPLATES = {
 **Target:** [company] | **Confidence:** [Robust/Plausible/Fragile/Speculative]
 
 ## 1. Executive Thesis
-## 2. Business Model Canvas
-## 3. Key Fact Layers
+## 2. At-a-Glance Verdict
+
+| Field | Verdict | Evidence |
+| :--- | :--- | :--- |
+| Customer | ... | ... |
+| Buyer | ... | ... |
+| User | ... | ... |
+| Market Type | ToB / ToC / B2B / B2C / B2B2C / Marketplace / Developer Platform / Mixed | ... |
+| Business Model | Subscription / Usage-based / Transaction fee / Ads / Services / Hardware / Mixed | ... |
+| Funding Stage | Pre-Seed / Seed / Series A / Series B / Series C+ / Growth / Public / Bootstrapped / No announced financing plan / Not found | ... |
+| Latest Valuation | ... | ... |
+| Moat Verdict | Strong / Moderate / Weak / None | ... |
+| Outlook | Strong / Positive / Mixed / Weak / Unknown | ... |
+| Biggest Risk | ... | ... |
+## 3. Business Model Canvas
+## 4. Key Fact Layers
 ### Verified Facts
 ### Inferred Assumptions
 ### Missing Data
-## 4. Profit Engine
-## 5. Strategic Interpretation
-## 6. Assumption Stress Test
-## 7. Next Steps""",
+## 5. Profit Engine
+## 6. Funding And Investor Signals
+## 7. Strategic Interpretation
+## 8. Assumption Stress Test
+## 9. Next Steps""",
         "zh": """\
 # OpenBusiness 商业模式逆向工程报告
 
 **分析对象：**[公司名] | **可信度：**[Robust/Plausible/Fragile/Speculative]
 
 ## 1. 核心判断
-## 2. 商业模式画布
-## 3. 关键事实分层
+## 2. 直觉结论卡
+
+| 字段 | 结论 | 证据 |
+| :--- | :--- | :--- |
+| 客户是谁 | ... | ... |
+| 谁付钱 | ... | ... |
+| 谁使用 | ... | ... |
+| 市场类型 | ToB / ToC / B2B / B2C / B2B2C / Marketplace / Developer Platform / Mixed | ... |
+| 商业模式 | 订阅 / 用量计费 / 抽佣 / 广告 / 服务 / 硬件 / 混合 | ... |
+| 融资阶段 | Pre-Seed / Seed / A轮 / B轮 / C轮及以后 / Growth / 已上市 / 自举未融资 / 未有融资计划 / 找不到 | ... |
+| 最新估值 | ... | ... |
+| 护城河判断 | Strong / Moderate / Weak / None | ... |
+| 前景判断 | 强 / 偏强 / 中性或分化 / 偏弱 / 未知 | ... |
+| 最大风险 | ... | ... |
+## 3. 商业模式画布
+## 4. 关键事实分层
 ### 已验证事实
 ### 推断假设
 ### 数据缺口
-## 4. 利润引擎
-## 5. 战略解读
-## 6. 假设压力测试
-## 7. 下一步建议""",
+## 5. 利润引擎
+## 6. 融资与投资人信号
+## 7. 战略解读
+## 8. 假设压力测试
+## 9. 下一步建议""",
     },
 }
 
@@ -273,6 +337,7 @@ UI_TEXT = {
         "target": "Target",
         "no_domain": "no domain",
         "output_language": "Output language",
+        "analysis_depth": "Analysis depth",
         "starting_pipeline": "Starting pipeline...",
         "pipeline_no_report": "Pipeline completed but no final report was produced. Check API keys and quota.",
         "report_generated": "Report generated:",
@@ -284,6 +349,7 @@ UI_TEXT = {
         "target": "分析对象",
         "no_domain": "无域名",
         "output_language": "输出语言",
+        "analysis_depth": "分析深度",
         "starting_pipeline": "启动流水线...",
         "pipeline_no_report": "流水线完成但没有最终报告。请检查 API key 与额度。",
         "report_generated": "报告已生成：",

@@ -1,0 +1,17 @@
+id = "consumer-app"
+name = "Consumer App"
+description = "Analysis pack for consumer apps, prosumer tools, media products, communities, and creator platforms."
+
+evidence_focus = [
+  "App store pages, ratings, reviews, social channels, community activity, referral loops, and creator proof.",
+  "Pricing, freemium gates, ads, subscriptions, marketplace take rate, and in-app purchase signals.",
+  "Retention proxies, habit frequency, network effects, user-generated content, and creator economics.",
+  "Privacy, moderation, platform-policy, app-store dependency, and paid acquisition risk.",
+]
+
+analyst_focus = [
+  "Separate user, payer, creator, advertiser, and platform-side stakeholders.",
+  "Classify whether value comes from utility, entertainment, identity, community, status, or marketplace liquidity.",
+  "Stress-test retention, virality, content supply, CAC, and platform dependency.",
+  "Do not infer consumer moat without evidence of habit, network effects, switching costs, or brand pull.",
+]

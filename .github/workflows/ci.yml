@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "codex/**"
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -e ".[dev]"
+
+      - name: Lint
+        run: python -m ruff check openbusiness
+
+      - name: Compile
+        run: python -m compileall openbusiness
+
+      - name: Validate installer shell syntax
+        run: bash -n install.sh
+
+      - name: Smoke-test packaged resources
+        run: |
+          python -m openbusiness.cli packs
+          python -m openbusiness.cli templates
+
+      - name: Keep README English-only
+        run: "! grep -P '[\\x{3400}-\\x{9fff}]' README.md"

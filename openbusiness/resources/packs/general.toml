@@ -1,0 +1,15 @@
+id = "general"
+name = "General Company"
+description = "Default evidence-first company analysis for unknown or mixed business models."
+
+evidence_focus = [
+  "Official website, pricing, customer proof, product docs, and recent news.",
+  "Funding, investors, valuation, ownership, public filings, or explicit missing-data markers.",
+  "Competitors, substitutes, hiring signals, ecosystem clues, and negative evidence.",
+]
+
+analyst_focus = [
+  "Classify customer, buyer, user, market type, revenue model, funding stage, moat, and outlook.",
+  "Separate what is verified, what is inferred, and what is missing in every major conclusion.",
+  "Prefer causal mechanisms and validation data over generic company summaries.",
+]
