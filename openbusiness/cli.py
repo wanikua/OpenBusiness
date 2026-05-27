@@ -12,9 +12,17 @@ from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 from rich.table import Table
 
+from openbusiness.language import (
+    SUPPORTED_OUTPUT_LANGUAGES,
+    normalize_output_language,
+    output_language_name,
+    report_language_warnings,
+    ui_text,
+)
 from openbusiness.llm_clients import config
 
 console = Console()
+LLM_PROVIDERS = ("openai", "anthropic", "deepseek")
 
 
 def _show_current_config() -> bool:
@@ -36,17 +44,18 @@ def _show_current_config() -> bool:
     table.add_row("Anthropic Key", "✅ 已配置" if cfg.get("anthropic_api_key") else "—")
     table.add_row("Tavily Key", "✅ 已配置" if cfg.get("tavily_api_key") else "—")
     table.add_row("Firecrawl Key", "✅ 已配置" if cfg.get("firecrawl_api_key") else "—")
+    table.add_row("Output Language", output_language_name(config.get_output_language()))
     console.print(table)
     return True
 
 
-def run_wizard(reset: bool = False) -> None:
+def run_wizard(reset: bool = False, output_language: str | None = None) -> None:
     """Interactive first-run config wizard."""
     console.print(
         Panel.fit(
             "[bold cyan]OpenBusiness 配置向导[/]\n\n"
             "配置文件保存路径: [yellow]~/.config/openbusiness/config.toml[/] (权限 0600)\n"
-            "环境变量始终优先生效 (OPENAI_API_KEY / ANTHROPIC_API_KEY / TAVILY_API_KEY / FIRECRAWL_API_KEY)\n",
+            "环境变量始终优先生效 (OPENBUSINESS_OUTPUT_LANGUAGE / OPENAI_API_KEY / ANTHROPIC_API_KEY / DEEPSEEK_API_KEY / TAVILY_API_KEY / FIRECRAWL_API_KEY)\n",
             title="🛠️ Setup",
             border_style="cyan",
         )
@@ -62,14 +71,21 @@ def run_wizard(reset: bool = False) -> None:
     console.print()
     provider = Prompt.ask(
         "[bold]选择 LLM 提供方[/]",
-        choices=["openai", "anthropic"],
+        choices=list(LLM_PROVIDERS),
         default="openai",
+    )
+    language = Prompt.ask(
+        "[bold]报告输出语言[/]",
+        choices=list(SUPPORTED_OUTPUT_LANGUAGES),
+        default=normalize_output_language(output_language or config.get_output_language()),
     )
 
     if provider == "openai":
         key = getpass.getpass("OpenAI API Key (sk-...): ").strip()
-    else:
+    elif provider == "anthropic":
         key = getpass.getpass("Anthropic API Key (sk-ant-...): ").strip()
+    else:
+        key = getpass.getpass("DeepSeek API Key: ").strip()
 
     if not key:
         console.print("[red]API key 必填。退出。[/]")
@@ -81,11 +97,13 @@ def run_wizard(reset: bool = False) -> None:
     tavily_key = getpass.getpass("Tavily API Key (Web 搜索, https://tavily.com): ").strip()
     firecrawl_key = getpass.getpass("Firecrawl API Key (页面抓取, https://firecrawl.dev): ").strip()
 
-    flat = {"provider": provider}
+    flat = {"provider": provider, "output_language": language}
     if provider == "openai":
         flat["openai_api_key"] = key
-    else:
+    elif provider == "anthropic":
         flat["anthropic_api_key"] = key
+    else:
+        flat["deepseek_api_key"] = key
     if tavily_key:
         flat["tavily_api_key"] = tavily_key
     if firecrawl_key:
@@ -111,16 +129,29 @@ def _print_next_steps() -> None:
     )
 
 
-def run_analysis(company: str, domain: str, ticker: str, output_dir: str) -> None:
+def run_analysis(
+    company: str,
+    domain: str,
+    ticker: str,
+    output_dir: str,
+    output_language: str | None = None,
+) -> None:
     """Run the pipeline against a target company."""
     from openbusiness.graph.setup import PIPELINE_STAGES, build_graph
+
+    try:
+        language = normalize_output_language(output_language or config.get_output_language())
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/]")
+        sys.exit(2)
 
     console.print(
         Panel.fit(
             f"[bold cyan]OpenBusiness[/] v0.1.0\n"
-            f"Target: [bold]{company}[/] "
-            f"({domain or 'no domain'})" + (f" [{ticker}]" if ticker else ""),
-            title="🚀 Business Model Reverse Engineering",
+            f"{ui_text(language, 'target')}: [bold]{company}[/] "
+            f"({domain or ui_text(language, 'no_domain')})" + (f" [{ticker}]" if ticker else "")
+            + f"\n{ui_text(language, 'output_language')}: [bold]{output_language_name(language)}[/]",
+            title=f"🚀 {ui_text(language, 'analysis_title')}",
             border_style="cyan",
         )
     )
@@ -131,6 +162,7 @@ def run_analysis(company: str, domain: str, ticker: str, output_dir: str) -> Non
         "company_name": company,
         "domain": domain or f"{company.lower().replace(' ', '')}.com",
         "ticker": ticker,
+        "output_language": language,
         "evidence_pack": "",
         "jtbd_report": "",
         "value_prop_report": "",
@@ -144,19 +176,32 @@ def run_analysis(company: str, domain: str, ticker: str, output_dir: str) -> Non
     }
 
     stage_labels = dict(PIPELINE_STAGES)
+    if language == "zh":
+        stage_labels = {
+            "evidence_collector": "🔍 证据收集",
+            "jtbd_analyst": "👥 客户与待完成任务分析",
+            "value_prop_analyst": "💎 价值主张分析",
+            "gtm_analyst": "🚀 市场进入分析",
+            "unit_econ_analyst": "💰 单体经济分析",
+            "moat_analyst": "🛡️ 护城河与竞争分析",
+            "synthesizer": "🧱 商业模式合成",
+            "stress_tester": "🔬 假设压力测试",
+            "finalizer": "📝 报告整理",
+        }
 
     final_state = initial_state
-    with console.status("[cyan]启动流水线...[/]") as status:
+    with console.status(f"[cyan]{ui_text(language, 'starting_pipeline')}[/]") as status:
         for event in graph.stream(initial_state, stream_mode="updates"):
             for node_name, node_output in event.items():
                 label = stage_labels.get(node_name, node_name)
                 status.update(f"[cyan]{label}[/]")
                 if isinstance(node_output, dict):
                     final_state = {**final_state, **node_output}
+                console.print(f"[green]✓[/] {label}")
 
     report = final_state.get("final_report", "")
     if not report:
-        console.print("[red]❌ 流水线完成但没有最终报告。检查 API key 与额度。[/]")
+        console.print(f"[red]❌ {ui_text(language, 'pipeline_no_report')}[/]")
         sys.exit(1)
 
     out = Path(output_dir)
@@ -165,9 +210,19 @@ def run_analysis(company: str, domain: str, ticker: str, output_dir: str) -> Non
     out_path = out / f"{slug}_business_model.md"
     out_path.write_text(report, encoding="utf-8")
 
-    console.print(f"\n[bold green]✅ 报告已生成:[/] {out_path}")
+    warnings = report_language_warnings(report, language)
+    if warnings:
+        console.print(
+            Panel(
+                "\n".join(warnings),
+                title=ui_text(language, "language_warning_title"),
+                border_style="yellow",
+            )
+        )
+
+    console.print(f"\n[bold green]✅ {ui_text(language, 'report_generated')}[/] {out_path}")
     preview = report[:800] + "\n..." if len(report) > 800 else report
-    console.print(Panel(preview, title="Preview", border_style="green"))
+    console.print(Panel(preview, title=ui_text(language, "preview"), border_style="green"))
 
 
 def main() -> None:
@@ -179,19 +234,41 @@ def main() -> None:
 
     p_config = sub.add_parser("config", help="运行配置向导 (首次使用必须运行)")
     p_config.add_argument("--reset", action="store_true", help="无视现有配置重新输入")
+    p_config.add_argument(
+        "--language",
+        "-l",
+        choices=list(SUPPORTED_OUTPUT_LANGUAGES),
+        help="设置默认报告输出语言: zh 或 en",
+    )
 
-    p_show = sub.add_parser("show", help="显示当前配置 (不显示完整 key)")
+    sub.add_parser("show", help="显示当前配置 (不显示完整 key)")
 
     p_analyze = sub.add_parser("analyze", help="分析一家公司的商业模式")
     p_analyze.add_argument("company", help="公司名 (e.g. 'Notion')")
     p_analyze.add_argument("--domain", "-d", default="", help="官网域名 (e.g. notion.so)")
     p_analyze.add_argument("--ticker", "-t", default="", help="美股代码 (e.g. AAPL)")
     p_analyze.add_argument("--output", "-o", default="output", help="报告输出目录")
+    p_analyze.add_argument(
+        "--language",
+        "-l",
+        choices=list(SUPPORTED_OUTPUT_LANGUAGES),
+        default=None,
+        help="报告输出语言: zh 或 en (覆盖配置与环境变量)",
+    )
 
     args = parser.parse_args()
 
     if args.cmd == "config":
-        run_wizard(reset=args.reset)
+        if args.language and not args.reset:
+            cfg = config.load_config()
+            cfg["output_language"] = normalize_output_language(args.language)
+            config.save_config(cfg)
+            console.print(
+                f"[green]✅ 默认报告输出语言已设置为[/] "
+                f"[bold]{output_language_name(args.language)}[/]"
+            )
+            return
+        run_wizard(reset=args.reset, output_language=args.language)
         return
 
     if args.cmd == "show":
@@ -204,9 +281,12 @@ def main() -> None:
             console.print("[yellow]⚠️ 未找到配置。请先运行: [bold]openbusiness config[/][/]")
             if Confirm.ask("现在运行向导吗?", default=True):
                 run_wizard()
+                if not config.is_configured():
+                    console.print("[red]配置仍不完整。请运行: [bold]openbusiness config --reset[/][/]")
+                    sys.exit(1)
             else:
                 sys.exit(1)
-        run_analysis(args.company, args.domain, args.ticker, args.output)
+        run_analysis(args.company, args.domain, args.ticker, args.output, args.language)
         return
 
     parser.print_help()

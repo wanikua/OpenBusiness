@@ -5,6 +5,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from openbusiness.agents.utils.agent_state import AgentState
+from openbusiness.language import with_output_language
 
 SYSTEM_PROMPT = """\
 # Role
@@ -30,7 +31,13 @@ def create_value_prop_analyst(llm):
     def node(state: AgentState) -> dict:
         response = llm.invoke(
             [
-                SystemMessage(content=SYSTEM_PROMPT),
+                SystemMessage(
+                    content=with_output_language(
+                        SYSTEM_PROMPT,
+                        state.get("output_language"),
+                        "value_prop_analyst",
+                    )
+                ),
                 HumanMessage(
                     content=(
                         f"目标公司: {state['company_name']}\n\n"

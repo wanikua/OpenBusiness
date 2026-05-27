@@ -22,6 +22,22 @@ def get_llm(tier: str = "quick"):
 
     from langchain_openai import ChatOpenAI
 
+    if provider == "deepseek":
+        model = (
+            config.get("deepseek_quick_model", "deepseek-chat")
+            if tier == "quick"
+            else config.get("deepseek_deep_model", "deepseek-chat")
+        )
+        return ChatOpenAI(
+            model=model,
+            api_key=config.get("deepseek_api_key"),
+            base_url=config.get("deepseek_base_url", "https://api.deepseek.com"),
+            temperature=0,
+            timeout=float(config.get("deepseek_timeout", "60")),
+            max_retries=int(config.get("deepseek_max_retries", "1")),
+            max_tokens=int(config.get("deepseek_max_tokens", "2048")),
+        )
+
     model = (
         config.get("openai_quick_model", "gpt-4o-mini")
         if tier == "quick"

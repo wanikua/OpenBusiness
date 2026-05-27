@@ -5,5 +5,5 @@ __pycache__/
 dist/
 build/
 .venv/
-output/*.md
+output/
 .ruff_cache/

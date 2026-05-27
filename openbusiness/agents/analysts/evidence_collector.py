@@ -10,6 +10,8 @@ from openbusiness.tools.evidence_tools import (
     sec_edgar_company_facts,
     tavily_search,
 )
+from openbusiness.agents.utils.tool_calling import invoke_with_tools
+from openbusiness.language import with_output_language
 
 SYSTEM_PROMPT = """\
 # Role
@@ -34,13 +36,13 @@ SYSTEM_PROMPT = """\
 
 # Output
 输出一份结构化的 Markdown 证据包，分节：
-- ## 官网 & 产品事实
-- ## 定价 & 商业模式信号
-- ## 新闻 & 战略动态
-- ## 创始人 / 产品哲学
-- ## 财务事实 (公开公司)
-- ## 竞品环境
-- ## 数据缺口 (Missing Data)
+- ## Website & Product Facts
+- ## Pricing & Business Model Signals
+- ## News & Strategy Updates
+- ## Founder / Product Philosophy
+- ## Financial Facts (Public Companies)
+- ## Competitive Landscape
+- ## Missing Data
 """
 
 TOOLS = [tavily_search, firecrawl_scrape, sec_edgar_company_facts]
@@ -51,16 +53,24 @@ def create_evidence_collector(llm):
 
     def node(state: AgentState) -> dict:
         ticker_note = f", ticker={state['ticker']}" if state.get("ticker") else " (private company)"
-        response = agent_llm.invoke(
+        response = invoke_with_tools(
+            agent_llm,
             [
-                SystemMessage(content=SYSTEM_PROMPT),
+                SystemMessage(
+                    content=with_output_language(
+                        SYSTEM_PROMPT,
+                        state.get("output_language"),
+                        "evidence_collector",
+                    )
+                ),
                 HumanMessage(
                     content=(
                         f"目标: {state['company_name']} (domain={state['domain']}{ticker_note})。"
                         "请使用工具采集证据，输出完整的证据包 Markdown。"
                     )
                 ),
-            ]
+            ],
+            TOOLS,
         )
         return {"evidence_pack": response.content, "messages": []}
 

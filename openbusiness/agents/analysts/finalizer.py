@@ -9,6 +9,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from openbusiness.agents.utils.agent_state import AgentState
+from openbusiness.language import with_output_language
 
 SYSTEM_PROMPT = """\
 # Role
@@ -19,39 +20,39 @@ SYSTEM_PROMPT = """\
 
 # Output Structure (严格按此格式)
 
-# 📊 OpenBusiness 商业模式逆向工程报告
+# 📊 OpenBusiness Business Model Reverse Engineering Report
 
 **Target:** [公司名] | **Confidence:** [Robust/Plausible/Fragile/Speculative]
 
 ---
 
-## 1. 商业模式画布
+## 1. Business Model Canvas
 [Canvas 报告原文]
 
 ---
 
-## 2. 关键事实层级
-### 🟢 Verified Facts (有源)
+## 2. Key Fact Layers
+### 🟢 Verified Facts
 [从 Canvas 提取所有 [VERIFIED:url] 条目]
 
-### 🟡 Inferred Assumptions (需验证)
+### 🟡 Inferred Assumptions
 [从 Canvas 提取所有 [INFERRED] 条目]
 
-### 🔴 Missing Data (影响信心)
+### 🔴 Missing Data
 [从 Canvas 提取所有 [MISSING] 条目]
 
 ---
 
-## 3. 假设压力测试
+## 3. Assumption Stress Test
 [Stress Test 报告原文]
 
 ---
 
-## 4. 下一步建议
-基于上面的分析，给用户 3 条可执行建议：
-- 如果要继续深挖这家公司，应该补充哪些数据？
-- 如果要复制其商业模式，最值得抄的是什么？
-- 如果要切入相同市场，致命软肋在哪？
+## 4. Next Steps
+Based on the analysis above, give the user 3 actionable recommendations:
+- What data should be collected next to investigate this company more deeply?
+- What is most worth copying if someone wanted to replicate this business model?
+- What is the fatal weakness if someone wanted to enter the same market?
 """
 
 
@@ -59,7 +60,13 @@ def create_finalizer(llm):
     def node(state: AgentState) -> dict:
         response = llm.invoke(
             [
-                SystemMessage(content=SYSTEM_PROMPT),
+                SystemMessage(
+                    content=with_output_language(
+                        SYSTEM_PROMPT,
+                        state.get("output_language"),
+                        "finalizer",
+                    )
+                ),
                 HumanMessage(
                     content=(
                         f"目标公司: {state['company_name']}\n\n"
