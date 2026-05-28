@@ -1,43 +1,48 @@
 # X / Twitter Launch Thread — OpenBusiness
 
-> Post the hook tweet with the **demo-report.svg** rendered as PNG attached. Each tweet ≤ 280 chars.
+> Post the hook tweet with the **openbusiness-report-preview.svg** rendered as PNG attached. Each tweet ≤ 280 chars.
 
 ---
 
 **1/**
-Most "AI business analysis" tools fabricate confident prose.
+I ran OpenBusiness on Notion.
 
-I built one that tags every single claim:
+It modeled LTV/CAC at 1.6x — below the healthy 3x benchmark.
 
-🟢 verified  ·  🟡 inferred  ·  🔴 missing
+Then it showed the dangerous part:
 
-You can see at a glance which numbers are real and which are guesses.
+6% monthly churn → 1.07x
+2% monthly churn → 3.2x
 
-It's called OpenBusiness. Free, open source, MIT.
+Same company, different churn assumption, totally different story.
 
 🧵 ↓
 
 ---
 
 **2/**
-Input: a company name.
+OpenBusiness is a free, open-source CLI that turns public evidence into a first-pass business model report.
 
-Output: a structured business model canvas + unit economics + moat analysis + a "what-breaks-the-canvas" stress test.
+Every claim is tagged:
 
-Every line is tagged. No more LLM laundering an inference as a fact.
+🟢 verified  ·  🟡 inferred  ·  🔴 missing
 
-[ATTACH: assets/demo-report.svg]
+It separates facts from guesses.
+
+[ATTACH: docs/assets/openbusiness-report-preview.svg]
 
 ---
 
 **3/**
-I ran it on Notion. Here's what it told me:
+Input: a company name + domain.
+
+Output: business model canvas, unit economics, moat analysis, and an assumption stress test.
+
+Notion example:
 
 LTV/CAC = 1.6x
 
 ⚠️ Below the healthy 3x benchmark.
-
-Then it told me *why* — and what assumption is load-bearing.
 
 ---
 
@@ -46,7 +51,7 @@ Then it told me *why* — and what assumption is load-bearing.
 
 "If churn is 2%, LTV jumps to $480, LTV/CAC → 3.2x. Healthy."
 
-This is the part I haven't seen elsewhere. The model says which assumption, if wrong, kills the analysis.
+That churn estimate is the assumption that changes the whole report.
 
 ---
 
@@ -58,26 +63,29 @@ This is the part I haven't seen elsewhere. The model says which assumption, if w
 💰 Unit Econ (pure Python math, not LLM)
 🛡️ Moat → 🧱 Canvas → 🔬 Stress Test → 📝 Final
 
-Inspired by TradingAgents but business ≠ a buy/sell vote.
+Business analysis is decomposition, not a vote.
 
 ---
 
 **6/**
 Design choices that matter:
 
-• Evidence pulled BEFORE any analyst runs
-• Unit economics is a Python function — LLMs can't multiply
-• Two LLM tiers: mini/haiku for analysts, deep model for synthesis (≈10x cheaper than running everything on a frontier model)
-• Every claim tagged
+• Evidence pulled before analysts run
+• Unit economics is a Python function
+• Two LLM tiers: mini/haiku for analysts, stronger model for synthesis
+• Provider support: OpenAI, Anthropic, DeepSeek
+• Each claim tagged
 
 ---
 
 **7/**
 Honest about what it can't do:
 
-It won't get you a verified ARPU when the company is private. It'll tell you that's missing and flag it 🔴, instead of inventing a number.
+It won't get you verified ARPU when a private company doesn't publish it.
 
-That's the entire point.
+It marks that 🔴 missing instead of inventing a number.
+
+That's the point.
 
 ---
 
@@ -90,14 +98,14 @@ openbusiness config
 openbusiness analyze "Notion" --domain notion.so
 ```
 
-Bring your own OpenAI or Anthropic key. Tavily + Firecrawl are optional (you get more 🟡 without them).
+Bring your own OpenAI, Anthropic, or DeepSeek key. Tavily + Firecrawl are optional (you get more 🟡 without them).
 
 ---
 
 **9/**
 Sample reports already in the repo for Notion, Vercel, OpenAI.
 
-Clone, run it on a company you care about, and tell me what surprised you.
+Clone, run a first-pass report from public evidence, and tell me which assumption changed the story.
 
 → https://github.com/wanikua/OpenBusiness
 
