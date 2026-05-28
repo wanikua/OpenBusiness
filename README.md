@@ -3,10 +3,13 @@
 > Evidence-first AI business model analysis and reverse engineering for founders,
 > investors, consultants, and strategy teams.
 
+[![PyPI](https://img.shields.io/pypi/v/openbusiness?style=flat-square&color=3775A9&logo=pypi&logoColor=white)](https://pypi.org/project/openbusiness/)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/Built%20with-LangGraph-1f2937?style=flat-square)](https://www.langchain.com/langgraph)
 [![Reports](https://img.shields.io/badge/Output-English%20%7C%20zh-0f766e?style=flat-square)](#bilingual-output)
 [![License](https://img.shields.io/badge/License-MIT-black?style=flat-square)](#license)
+
+> **Install:** `pipx install openbusiness` &nbsp;·&nbsp; one-shot: `uvx openbusiness analyze "Notion" --domain notion.so`
 
 OpenBusiness is an open-source AI agent CLI for business model analysis,
 competitive research, market research, go-to-market strategy, unit economics,

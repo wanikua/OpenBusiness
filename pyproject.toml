@@ -23,7 +23,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Financial and Insurance Industry",
     "Intended Audience :: Information Technology",
-    "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Natural Language :: Chinese (Simplified)",
     "Programming Language :: Python :: 3",
