@@ -60,10 +60,9 @@ research report before deeper diligence:
 | Product teams | Why do customers switch and stay? | JTBD, adoption friction, switching triggers, and alternatives. |
 | Researchers | What data is missing before making a stronger claim? | Missing-data inventory and validation plan. |
 
-Search keywords: business model analysis, company research, business model
-canvas generator, market research, competitive analysis, go-to-market analysis,
-startup analysis, unit economics analysis, LangGraph agents, evidence-first
-research.
+Search keywords: business model research CLI, business model canvas generator,
+company research tool, competitive analysis, unit economics, LangGraph agents,
+evidence-labeled reports.
 
 ## Business Model Research Tool Comparison
 
