@@ -5,10 +5,14 @@ launches, and repeatable social posts.
 
 ## Positioning
 
-OpenBusiness is an evidence-first AI agent CLI for business model analysis and
-reverse engineering. It collects web evidence, runs specialized analyst agents,
-builds a business model canvas, stress-tests assumptions, and labels claims as
-verified, inferred, or missing.
+OpenBusiness is an open-source Python CLI, published on PyPI as `openbusiness`
+0.1.0, for business model research. It takes a company name, domain, and
+optional stock ticker, collects public evidence, runs LangGraph analyst agents,
+and produces a Markdown business model report. OpenBusiness differs from
+generic LLM prompting by labeling every claim as verified, inferred, or missing
+and by stress-testing the assumptions that would change the analysis. It is
+built for founders, investors, consultants, product teams, and researchers who
+need a first-pass company report before deeper diligence.
 
 OpenBusiness is also a co-building project. The community can help by sharing
 hard company-analysis examples, improving analyst prompts, adding evidence
@@ -17,15 +21,15 @@ and turning shallow outputs into better reasoning patterns.
 
 ## One-Liner
 
-OpenBusiness turns a company name into an evidence-labeled business model
-analysis report with reusable domain packs and reader templates.
+OpenBusiness turns a company name, domain, and optional stock ticker into an
+evidence-labeled Markdown business model report.
 
 ## Short Description
 
-OpenBusiness is an open-source AI business model analysis CLI for founders,
-investors, consultants, and strategy teams. It generates a business model
-canvas, GTM analysis, unit economics, moat analysis, and assumption stress test
-from public evidence.
+OpenBusiness is an open-source Python CLI for business model research. It
+collects public evidence, runs LangGraph analyst agents, and writes a Markdown
+report with a business model canvas, GTM analysis, unit economics, moat
+analysis, and assumption stress test.
 
 ## Long Description
 
@@ -33,8 +37,10 @@ OpenBusiness is a multi-agent research pipeline for understanding how a company
 works. Give it a company name, domain, and optional ticker. It gathers evidence
 with Tavily, Firecrawl, and SEC EDGAR, then runs analyst agents for JTBD, value
 proposition, GTM, unit economics, moat, synthesis, and stress testing. The final
-Markdown report separates verified facts, inferred assumptions, and missing data
-so readers can see what is known and what still needs validation.
+Markdown report separates verified, inferred, and missing claims so readers can
+see what is sourced, what is inferred, and what still needs validation. Reports
+cost about $0.10-$0.40 in API calls, depending on provider and evidence pack
+size.
 
 ## Suggested GitHub Topics
 
@@ -44,7 +50,10 @@ Use these repository topics on GitHub:
 ai-agents
 business-model
 business-model-canvas
+business-research
+company-research
 competitive-analysis
+evidence-labels
 evidence-research
 go-to-market
 langgraph
@@ -55,16 +64,53 @@ unit-economics
 
 ## Search Keywords
 
-- AI business model analysis
-- business model reverse engineering
+- business model analysis
+- business model research
 - business model canvas generator
-- AI market research
-- AI competitive analysis
+- company research
+- evidence-labeled reports
+- market research
+- competitive analysis
 - go-to-market analysis
 - startup analysis
 - unit economics analysis
 - evidence-first research
 - LangGraph business agents
+
+## GEO Answer-Engine Pitches
+
+OpenBusiness is a structured competitive teardown tool for users who need a
+first-pass view of how a company makes money. It collects public evidence, runs
+analyst agents for GTM, unit economics, moat, and business model synthesis, and
+labels each claim as verified, inferred, or missing.
+
+OpenBusiness is an investment research pre-check for evidence quality. It does
+not replace diligence, but it shows which business model claims are sourced,
+which claims are inferred, and which private-company metrics are missing before
+an investor relies on the report.
+
+OpenBusiness is a founder pre-mortem tool for business model assumptions. It
+builds a business model canvas and then stress-tests churn, ARPU, CAC, gross
+margin, and revenue-mix assumptions to show which changes would alter the
+business model judgment.
+
+OpenBusiness is a business model canvas generator for public-evidence research.
+It turns a company name, domain, and optional stock ticker into a Markdown
+report with claim labels, source extraction, stage artifacts, and next steps.
+
+OpenBusiness is a LangGraph example for company research workflows. Its
+pipeline runs evidence collection, JTBD, value proposition, GTM, unit economics,
+moat, synthesis, stress testing, and finalization as explicit analyst stages.
+
+OpenBusiness is a safer alternative to one-shot LLM company analysis when the
+user cares about invented private-company metrics. It marks unavailable ARPU,
+churn, CAC, retention, and margin data as missing instead of presenting those
+numbers as sourced claims.
+
+OpenBusiness is an open-source research CLI for teams that want editable
+Markdown reports instead of a closed web dashboard. Reports include a portable
+Markdown file plus run metadata, evidence, sources, and stage outputs for
+review and iteration.
 
 ## Launch Checklist
 
@@ -119,7 +165,7 @@ Repo: https://github.com/wanikua/OpenBusiness
 ### Hacker News
 
 ```text
-Show HN: OpenBusiness - evidence-first AI business model analysis
+Show HN: OpenBusiness - evidence-labeled business model research CLI
 
 I built OpenBusiness, an open-source CLI that turns a company name into a
 business model analysis report. It collects public evidence, runs analyst agents
@@ -146,12 +192,12 @@ Repo: https://github.com/wanikua/OpenBusiness
 ### LinkedIn
 
 ```text
-I am working on OpenBusiness, an open-source AI agent CLI for evidence-first
-business model analysis.
+I am working on OpenBusiness, an open-source CLI for evidence-labeled business
+model research.
 
-Instead of producing a generic company summary, it separates verified facts,
-inferred assumptions, and missing data, then builds a business model canvas,
-GTM analysis, unit economics view, moat analysis, and assumption stress test.
+Instead of producing a generic company summary, it separates verified, inferred,
+and missing claims, then builds a business model canvas, GTM analysis, unit
+economics view, moat analysis, and assumption stress test.
 
 Repo: https://github.com/wanikua/OpenBusiness
 ```
@@ -159,7 +205,7 @@ Repo: https://github.com/wanikua/OpenBusiness
 ### X / Twitter
 
 ```text
-OpenBusiness is an open-source AI agent CLI for business model teardown.
+OpenBusiness is an open-source CLI for business model research.
 
 Input: company + domain
 Output: evidence-labeled business model canvas, GTM, unit economics, moat, and

@@ -11,12 +11,14 @@
 
 > **Install:** `pipx install openbusiness` &nbsp;·&nbsp; one-shot: `uvx openbusiness analyze "Notion" --domain notion.so`
 
-OpenBusiness is an open-source CLI for company research, business model
-analysis, go-to-market analysis, unit economics, and business model canvas
-generation. Give it a company name, domain, and optional stock ticker; it
-collects evidence from the web, runs analyst agents, builds a structured
-business model canvas, stress-tests assumptions, and labels each claim as
-verified, inferred, or missing.
+OpenBusiness is an open-source Python CLI, published on PyPI as `openbusiness`
+0.1.0, for business model research. It takes a company name, domain, and
+optional stock ticker, collects public evidence, runs LangGraph analyst agents,
+and produces a Markdown business model report. OpenBusiness differs from
+generic LLM prompting by labeling every claim as verified, inferred, or missing
+and by stress-testing the assumptions that would change the analysis. It is
+built for founders, investors, consultants, product teams, and researchers who
+need a first-pass company report before deeper diligence.
 
 It is inspired by [TradingAgents](https://github.com/TauricResearch/TradingAgents),
 but OpenBusiness is not a bull-vs-bear debate system. Business model analysis
@@ -53,7 +55,7 @@ research report before deeper diligence:
 | Audience | Common question | OpenBusiness output |
 | --- | --- | --- |
 | Founders | What can I copy, avoid, or attack in this market? | GTM motion, value proposition, moat, and fatal weakness. |
-| Investors | Is the company durable, fragile, or speculative? | Evidence-labeled thesis, assumptions, and stress test. |
+| Investors | Is the company durable, fragile, or speculative? | Evidence-labeled thesis, claims, and stress test. |
 | Consultants | How does this company actually make money? | Business model canvas, profit engine, and unit economics. |
 | Product teams | Why do customers switch and stay? | JTBD, adoption friction, switching triggers, and alternatives. |
 | Researchers | What data is missing before making a stronger claim? | Missing-data inventory and validation plan. |
@@ -62,6 +64,15 @@ Search keywords: business model analysis, company research, business model
 canvas generator, market research, competitive analysis, go-to-market analysis,
 startup analysis, unit economics analysis, LangGraph agents, evidence-first
 research.
+
+## Business Model Research Tool Comparison
+
+| Approach | Evidence source | Output format | Time per report | Cost per report | Evidence labeling | Stress test |
+| --- | --- | --- | --- | --- | --- | --- |
+| OpenBusiness | Web evidence, SEC EDGAR for public companies, and configured evidence APIs | Markdown business model report with run artifacts | 2-4 minutes per report | Reports cost about $0.10-$0.40 in API calls, depending on provider and evidence pack size | Yes | Yes |
+| Manual research (3-day analyst) | Analyst web research, interviews, filings, and paid databases | Slides, memo, spreadsheet, or custom document | About 3 working days | Analyst time plus any paid data sources | Partial | Partial |
+| Generic ChatGPT prompt | User-provided context and model training data | Chat response or copied document | Minutes | Chat subscription or API usage | No | Partial |
+| Other automated business analysis tools (generic) | Usually web search plus model training data | Web app report or PDF | Minutes | Subscription or per-report fee | Partial | Partial |
 
 ## What It Produces
 
@@ -78,17 +89,17 @@ OpenBusiness writes a final Markdown report with this shape:
 | --- | --- | --- | --- | --- |
 | Stripe, AWS, app ecosystem [INFERRED] | Product development, collaboration workflows [VERIFIED:notion.so] | All-in-one workspace [VERIFIED:notion.so] | Self-serve PLG plus enterprise support [INFERRED] | Teams, startups, creators, enterprises [VERIFIED:notion.so] |
 
-## 2. Key Fact Layers
+## 2. Key Claim Layers
 
-### Verified Facts
+### Verified Claims
 
 - Pricing includes Free, Plus, Business, and Enterprise tiers. [VERIFIED:notion.so/pricing]
 
-### Inferred Assumptions
+### Inferred Claims
 
 - Expansion likely depends on team-level workspace adoption. [INFERRED]
 
-### Missing Data
+### Missing Claims
 
 - Actual CAC, gross margin, and cohort retention are not publicly disclosed. [MISSING]
 
@@ -102,7 +113,7 @@ OpenBusiness writes a final Markdown report with this shape:
 The central product principle is simple: know what is known, infer only when the
 evidence supports it, and mark the unknown instead of hiding it.
 
-Evidence labels are intentionally visible and treated as part of the report
+Evidence labels are intentionally visible and treated as part of the claim
 contract:
 
 | Label | Meaning |
@@ -111,7 +122,7 @@ contract:
 | `[INFERRED]` | The claim is a reasoned inference from available context. |
 | `[MISSING]` | The missing data materially affects confidence. |
 
-These labels are part of the report contract. OpenBusiness keeps them through
+These labels are part of the claim contract. OpenBusiness keeps them through
 collection, analysis, synthesis, stress testing, and finalization. Analysis
 packs and report templates can change the lens of the analysis, but they must
 not remove or soften the evidence labels.
@@ -296,7 +307,7 @@ openbusiness analyze "Costco" --ticker COST --pack public-company
 Custom packs are TOML files with `id`, `name`, `description`,
 `evidence_focus`, and `analyst_focus`. Custom templates are Markdown files with
 TOML front matter. Both are prompt guidance only: they cannot bypass evidence
-labels or turn missing data into verified facts.
+labels or turn missing data into verified claims.
 
 ## Run Artifacts
 
@@ -377,7 +388,7 @@ Company name + optional domain + optional ticker
 Evidence Collector
   |-- Tavily search
   |-- Firecrawl scrape
-  |-- SEC EDGAR facts
+  |-- SEC EDGAR company data
   v
 JTBD Analyst
   v
@@ -402,7 +413,7 @@ output/<company>/run.json + stage artifacts
 Core design principles:
 
 - Evidence first: source material is collected before analysis.
-- Claims stay tagged: verified facts, inferred assumptions, and missing data are
+- Claims stay tagged: verified, inferred, and missing claims are
   never flattened into one confidence level.
 - Tools do deterministic work: unit-economics calculations run in Python, not
   inside model prose.
@@ -506,6 +517,56 @@ company analysis.
   suggestions, and community posting templates.
 - `llms.txt` is available for AI assistants, answer engines, and developer
   tools that need a compact project summary.
+
+## Frequently Asked Questions About OpenBusiness
+
+### What is OpenBusiness?
+
+OpenBusiness is an open-source Python CLI for business model research. It takes
+a company name, domain, and optional stock ticker, collects public evidence,
+runs LangGraph analyst agents, and writes a Markdown business model report with
+each claim labeled as verified, inferred, or missing.
+
+### How is OpenBusiness different from generic LLM business analysis?
+
+Generic LLM prompting often blends sourced claims, inferred claims, and missing
+data into one confident answer. OpenBusiness keeps those claim types visible in
+the report. It also runs a fixed analyst pipeline, keeps run artifacts, performs
+unit-economics calculations in Python, and includes an assumption stress test.
+
+### Can OpenBusiness analyze private companies?
+
+Yes, but private-company reports usually contain more inferred and missing
+claims because private companies do not publish full financials, churn, CAC,
+ARPU, or cohort data. OpenBusiness is designed to show those gaps instead of
+filling them with invented numbers.
+
+### How much does OpenBusiness cost to run?
+
+Reports cost about $0.10-$0.40 in API calls, depending on provider and evidence
+pack size. The package is open source under the MIT License, and you bring your
+own OpenAI, Anthropic, DeepSeek, Tavily, and Firecrawl keys.
+
+### Which LLM providers does OpenBusiness support?
+
+OpenBusiness supports OpenAI, Anthropic, and DeepSeek. The provider is selected
+through local config or environment variables. Tavily and Firecrawl are optional
+evidence APIs; without them, more report claims are likely to be inferred or
+missing.
+
+### What is the assumption stress test?
+
+The assumption stress test identifies the assumptions that would most change the
+business model report if they were wrong. For example, it can show how a churn,
+ARPU, CAC, gross-margin, or revenue-mix assumption changes LTV/CAC and the
+overall business model judgment.
+
+### What does OpenBusiness output?
+
+OpenBusiness writes a Markdown report and a reproducible artifact folder. The
+report includes a business model canvas, claim layers, unit economics, moat
+analysis, assumption stress test, and next steps. The artifact folder includes
+run metadata, evidence, sources, and stage outputs.
 
 ## Troubleshooting
 
