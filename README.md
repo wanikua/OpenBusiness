@@ -1,7 +1,7 @@
 # OpenBusiness
 
-> Evidence-first AI business model analysis and reverse engineering for founders,
-> investors, consultants, and strategy teams.
+> Business model research CLI that labels claims as verified, inferred, or
+> missing.
 
 [![PyPI](https://img.shields.io/pypi/v/openbusiness?style=flat-square&color=3775A9&logo=pypi&logoColor=white)](https://pypi.org/project/openbusiness/)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
@@ -11,12 +11,12 @@
 
 > **Install:** `pipx install openbusiness` &nbsp;·&nbsp; one-shot: `uvx openbusiness analyze "Notion" --domain notion.so`
 
-OpenBusiness is an open-source AI agent CLI for business model analysis,
-competitive research, market research, go-to-market strategy, unit economics,
-and business model canvas generation. Give it a company name, domain, and
-optional stock ticker; it collects evidence from the web, runs specialized
-analyst agents, builds a structured business model canvas, stress-tests
-assumptions, and labels each claim as verified, inferred, or missing.
+OpenBusiness is an open-source CLI for company research, business model
+analysis, go-to-market analysis, unit economics, and business model canvas
+generation. Give it a company name, domain, and optional stock ticker; it
+collects evidence from the web, runs analyst agents, builds a structured
+business model canvas, stress-tests assumptions, and labels each claim as
+verified, inferred, or missing.
 
 It is inspired by [TradingAgents](https://github.com/TauricResearch/TradingAgents),
 but OpenBusiness is not a bull-vs-bear debate system. Business model analysis
@@ -31,7 +31,7 @@ buy/sell vote.
 
 - Multi-agent business analysis pipeline built with LangGraph.
 - Evidence collection through Tavily search, Firecrawl scraping, and SEC EDGAR.
-- Business model canvas output with explicit evidence labels: known, inferred,
+- Business model canvas output with explicit evidence labels: verified, inferred,
   or missing.
 - Domain analysis packs for SaaS, public companies, ecommerce, AI
   infrastructure, consumer apps, and general company research.
@@ -53,15 +53,15 @@ research report before deeper diligence:
 | Audience | Common question | OpenBusiness output |
 | --- | --- | --- |
 | Founders | What can I copy, avoid, or attack in this market? | GTM motion, value proposition, moat, and fatal weakness. |
-| Investors | Is the company robust, plausible, fragile, or speculative? | Evidence-labeled thesis, assumptions, and stress test. |
+| Investors | Is the company durable, fragile, or speculative? | Evidence-labeled thesis, assumptions, and stress test. |
 | Consultants | How does this company actually make money? | Business model canvas, profit engine, and unit economics. |
 | Product teams | Why do customers switch and stay? | JTBD, adoption friction, switching triggers, and alternatives. |
 | Researchers | What data is missing before making a stronger claim? | Missing-data inventory and validation plan. |
 
-Search keywords: AI business model analysis, business model reverse engineering,
-business model canvas generator, AI market research, AI competitive analysis,
-go-to-market analysis, startup analysis, unit economics analysis, LangGraph
-agents, evidence-first research.
+Search keywords: business model analysis, company research, business model
+canvas generator, market research, competitive analysis, go-to-market analysis,
+startup analysis, unit economics analysis, LangGraph agents, evidence-first
+research.
 
 ## What It Produces
 
@@ -111,10 +111,10 @@ contract:
 | `[INFERRED]` | The claim is a reasoned inference from available context. |
 | `[MISSING]` | The missing data materially affects confidence. |
 
-This is a feature, not a formatting detail. OpenBusiness keeps these labels
-through collection, analysis, synthesis, stress testing, and finalization.
-Analysis packs and report templates can change the lens of the analysis, but
-they must not remove or soften the evidence labels.
+These labels are part of the report contract. OpenBusiness keeps them through
+collection, analysis, synthesis, stress testing, and finalization. Analysis
+packs and report templates can change the lens of the analysis, but they must
+not remove or soften the evidence labels.
 
 ## Quick Start
 
@@ -488,8 +488,8 @@ Supply-chain and release hygiene:
 ## Community
 
 OpenBusiness is meant to be co-built with people who care about better business
-research. The goal is not only to ship an AI agent demo, but to build a shared
-open-source workflow for evidence-labeled company analysis.
+research. The goal is a shared open-source workflow for evidence-labeled
+company analysis.
 
 - Star the repository if OpenBusiness helps your research workflow.
 - Open an issue for bugs, missing providers, report-quality problems, or
