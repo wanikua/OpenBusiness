@@ -4,35 +4,31 @@ from __future__ import annotations
 
 import argparse
 import getpass
-import json
-import re
 import sys
-from datetime import datetime, timezone
-from pathlib import Path
 
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 from rich.table import Table
 
+from openbusiness.analysis_run import (
+    ANALYSIS_DEPTHS,
+    AnalysisRunRequest,
+    execute_analysis_run,
+    prepare_analysis_run,
+)
 from openbusiness.language import (
     SUPPORTED_OUTPUT_LANGUAGES,
     normalize_output_language,
     output_language_name,
-    report_language_warnings,
     ui_text,
 )
 from openbusiness.llm_clients import config
-from openbusiness.profiles import (
-    list_analysis_packs,
-    list_report_templates,
-    load_analysis_pack,
-    load_report_template,
-)
+from openbusiness.profiles import list_analysis_packs, list_report_templates
+from openbusiness.stages import stage_labels as build_stage_labels
 
 console = Console()
 LLM_PROVIDERS = ("openai", "anthropic", "deepseek")
-ANALYSIS_DEPTHS = ("standard", "deep")
 
 CONFIG_UI_TEXT = {
     "en": {
@@ -298,127 +294,6 @@ def _print_next_steps(ui_language: str = "zh") -> None:
     )
 
 
-def _choose_analysis_languages(
-    output_language: str | None,
-    ui_language: str | None,
-) -> tuple[str, str]:
-    """Resolve terminal UI language and choose report output language separately."""
-    ui_language = normalize_output_language(ui_language or config.get_ui_language())
-
-    if output_language is None:
-        output_language = config.get_output_language(default=ui_language)
-    output_language = normalize_output_language(output_language)
-
-    return output_language, ui_language
-
-
-def _slugify(value: str) -> str:
-    slug = re.sub(r"[^a-z0-9]+", "_", value.lower()).strip("_")
-    return slug or "company"
-
-
-def _extract_verified_sources(*texts: str) -> list[str]:
-    sources: list[str] = []
-    seen: set[str] = set()
-    for text in texts:
-        for source in re.findall(r"\[VERIFIED:([^\]]+)\]", text or ""):
-            normalized = source.strip()
-            if normalized and normalized not in seen:
-                seen.add(normalized)
-                sources.append(normalized)
-    return sources
-
-
-STAGE_ARTIFACTS = {
-    "evidence_pack": "01_evidence.md",
-    "jtbd_report": "02_jtbd.md",
-    "value_prop_report": "03_value_prop.md",
-    "gtm_report": "04_gtm.md",
-    "unit_econ_report": "05_unit_econ.md",
-    "moat_report": "06_moat.md",
-    "canvas_report": "07_canvas.md",
-    "stress_test_report": "08_stress_test.md",
-    "final_report": "09_final.md",
-}
-
-
-def _write_run_artifacts(
-    *,
-    output_dir: Path,
-    slug: str,
-    final_state: dict,
-    report: str,
-    warnings: list[str],
-    company: str,
-    domain: str,
-    ticker: str,
-    output_language: str,
-    ui_language: str,
-    analysis_depth: str,
-    analysis_pack: str,
-    report_template: str,
-) -> Path:
-    run_dir = output_dir / slug
-    stages_dir = run_dir / "stages"
-    stages_dir.mkdir(parents=True, exist_ok=True)
-
-    for key, filename in STAGE_ARTIFACTS.items():
-        content = final_state.get(key, "")
-        if content:
-            (stages_dir / filename).write_text(str(content), encoding="utf-8")
-
-    report_path = run_dir / f"report.{output_language}.md"
-    report_path.write_text(report, encoding="utf-8")
-
-    evidence_pack = str(final_state.get("evidence_pack", ""))
-    sources = _extract_verified_sources(*[str(final_state.get(key, "")) for key in STAGE_ARTIFACTS])
-
-    (run_dir / "evidence.json").write_text(
-        json.dumps(
-            {
-                "company": company,
-                "domain": domain,
-                "ticker": ticker,
-                "verified_sources": sources,
-                "evidence_pack": evidence_pack,
-            },
-            indent=2,
-            ensure_ascii=False,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-
-    sources_markdown = "\n".join(f"- {source}" for source in sources) or "- [MISSING] No verified sources extracted."
-    (run_dir / "sources.md").write_text(f"# Sources\n\n{sources_markdown}\n", encoding="utf-8")
-
-    run_meta = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "company": company,
-        "domain": domain,
-        "ticker": ticker,
-        "output_language": output_language,
-        "ui_language": ui_language,
-        "analysis_depth": analysis_depth,
-        "analysis_pack": analysis_pack,
-        "report_template": report_template,
-        "evidence_label_policy": {
-            "verified": "[VERIFIED:url] means directly supported by cited source evidence.",
-            "inferred": "[INFERRED] means reasoned from evidence without direct citation.",
-            "missing": "[MISSING] means important data was absent or unavailable.",
-        },
-        "language_warnings": warnings,
-        "paths": {
-            "report": str(report_path),
-            "stages": str(stages_dir),
-            "evidence": str(run_dir / "evidence.json"),
-            "sources": str(run_dir / "sources.md"),
-        },
-    }
-    (run_dir / "run.json").write_text(json.dumps(run_meta, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    return run_dir
-
-
 def _print_profile_table(ui_language: str, title: str, profiles) -> None:
     table = Table(title=title, border_style="cyan", show_header=True)
     table.add_column(_help_text(ui_language, "id"), style="bold")
@@ -443,19 +318,22 @@ def run_analysis(
     template_file: str | None = None,
 ) -> None:
     """Run the pipeline against a target company."""
-    from openbusiness.graph.setup import PIPELINE_STAGES, build_graph
-
     try:
-        language, ui_language = _choose_analysis_languages(output_language, ui_language)
-    except ValueError as exc:
-        console.print(f"[red]{exc}[/]")
-        sys.exit(2)
-    if analysis_depth not in ANALYSIS_DEPTHS:
-        console.print(f"[red]Unsupported analysis depth: {analysis_depth!r}[/]")
-        sys.exit(2)
-    try:
-        analysis_pack = load_analysis_pack(pack_name, pack_file)
-        report_template = load_report_template(template_name, template_file)
+        prepared = prepare_analysis_run(
+            AnalysisRunRequest(
+                company=company,
+                domain=domain,
+                ticker=ticker,
+                output_dir=output_dir,
+                output_language=output_language,
+                ui_language=ui_language,
+                analysis_depth=analysis_depth,
+                pack_name=pack_name,
+                pack_file=pack_file,
+                template_name=template_name,
+                template_file=template_file,
+            )
+        )
     except ValueError as exc:
         console.print(f"[red]{exc}[/]")
         sys.exit(2)
@@ -463,106 +341,55 @@ def run_analysis(
     console.print(
         Panel.fit(
             f"[bold cyan]OpenBusiness[/] v0.1.0\n"
-            f"{ui_text(ui_language, 'target')}: [bold]{company}[/] "
-            f"({domain or ui_text(ui_language, 'no_domain')})" + (f" [{ticker}]" if ticker else "")
-            + f"\n{ui_text(ui_language, 'output_language')}: [bold]{output_language_name(language)}[/]"
-            + f"\n{ui_text(ui_language, 'analysis_depth')}: [bold]{analysis_depth}[/]"
-            + f"\n{_help_text(ui_language, 'analysis_pack')}: [bold]{analysis_pack.id}[/]"
-            + f"\n{_help_text(ui_language, 'report_template')}: [bold]{report_template.id}[/]",
-            title=f"🚀 {ui_text(ui_language, 'analysis_title')}",
+            f"{ui_text(prepared.ui_language, 'target')}: [bold]{prepared.company}[/] "
+            f"({prepared.domain or ui_text(prepared.ui_language, 'no_domain')})"
+            + (f" [{prepared.ticker}]" if prepared.ticker else "")
+            + f"\n{ui_text(prepared.ui_language, 'output_language')}: "
+            f"[bold]{output_language_name(prepared.output_language)}[/]"
+            + f"\n{ui_text(prepared.ui_language, 'analysis_depth')}: [bold]{prepared.analysis_depth}[/]"
+            + f"\n{_help_text(prepared.ui_language, 'analysis_pack')}: "
+            f"[bold]{prepared.analysis_pack.id}[/]"
+            + f"\n{_help_text(prepared.ui_language, 'report_template')}: "
+            f"[bold]{prepared.report_template.id}[/]",
+            title=f"🚀 {ui_text(prepared.ui_language, 'analysis_title')}",
             border_style="cyan",
         )
     )
 
-    graph = build_graph(analysis_depth)
+    labels = build_stage_labels(prepared.ui_language)
 
-    initial_state = {
-        "company_name": company,
-        "domain": domain or f"{company.lower().replace(' ', '')}.com",
-        "ticker": ticker,
-        "output_language": language,
-        "analysis_depth": analysis_depth,
-        "analysis_pack": analysis_pack.id,
-        "report_template": report_template.id,
-        "pack_context": analysis_pack.to_prompt_block(),
-        "template_context": report_template.to_prompt_block(),
-        "evidence_pack": "",
-        "jtbd_report": "",
-        "value_prop_report": "",
-        "gtm_report": "",
-        "unit_econ_report": "",
-        "moat_report": "",
-        "canvas_report": "",
-        "stress_test_report": "",
-        "final_report": "",
-        "messages": [],
-    }
+    try:
+        with console.status(f"[cyan]{ui_text(prepared.ui_language, 'starting_pipeline')}[/]") as status:
 
-    stage_labels = dict(PIPELINE_STAGES)
-    if ui_language == "zh":
-        stage_labels = {
-            "evidence_collector": "🔍 证据收集",
-            "jtbd_analyst": "👥 客户与待完成任务分析",
-            "value_prop_analyst": "💎 价值主张分析",
-            "gtm_analyst": "🚀 市场进入分析",
-            "unit_econ_analyst": "💰 单体经济分析",
-            "moat_analyst": "🛡️ 护城河与竞争分析",
-            "synthesizer": "🧱 商业模式合成",
-            "stress_tester": "🔬 假设压力测试",
-            "finalizer": "📝 报告整理",
-        }
-
-    final_state = initial_state
-    with console.status(f"[cyan]{ui_text(ui_language, 'starting_pipeline')}[/]") as status:
-        for event in graph.stream(initial_state, stream_mode="updates"):
-            for node_name, node_output in event.items():
-                label = stage_labels.get(node_name, node_name)
+            def on_stage_done(node_name: str, _node_output: dict, _final_state: dict) -> None:
+                label = labels.get(node_name, node_name)
                 status.update(f"[cyan]{label}[/]")
-                if isinstance(node_output, dict):
-                    final_state = {**final_state, **node_output}
                 console.print(f"[green]✓[/] {label}")
 
-    report = final_state.get("final_report", "")
-    if not report:
-        console.print(f"[red]❌ {ui_text(ui_language, 'pipeline_no_report')}[/]")
+            result = execute_analysis_run(prepared, on_stage_done=on_stage_done)
+    except RuntimeError:
+        console.print(f"[red]❌ {ui_text(prepared.ui_language, 'pipeline_no_report')}[/]")
         sys.exit(1)
 
-    out = Path(output_dir)
-    out.mkdir(exist_ok=True)
-    slug = _slugify(company)
-    out_path = out / f"{slug}_business_model.md"
-    out_path.write_text(report, encoding="utf-8")
-
-    warnings = report_language_warnings(report, language)
-    if warnings:
+    if result.warnings:
         console.print(
             Panel(
-                "\n".join(warnings),
-                title=ui_text(ui_language, "language_warning_title"),
+                "\n".join(result.warnings),
+                title=ui_text(prepared.ui_language, "language_warning_title"),
                 border_style="yellow",
             )
         )
 
-    run_dir = _write_run_artifacts(
-        output_dir=out,
-        slug=slug,
-        final_state=final_state,
-        report=report,
-        warnings=warnings,
-        company=company,
-        domain=domain or f"{company.lower().replace(' ', '')}.com",
-        ticker=ticker,
-        output_language=language,
-        ui_language=ui_language,
-        analysis_depth=analysis_depth,
-        analysis_pack=analysis_pack.id,
-        report_template=report_template.id,
+    console.print(
+        f"\n[bold green]✅ {ui_text(prepared.ui_language, 'report_generated')}[/] "
+        f"{result.artifacts.root_report_path}"
     )
-
-    console.print(f"\n[bold green]✅ {ui_text(ui_language, 'report_generated')}[/] {out_path}")
-    console.print(f"[bold green]✅ {_help_text(ui_language, 'artifacts_written')}[/] {run_dir}")
-    preview = report[:800] + "\n..." if len(report) > 800 else report
-    console.print(Panel(preview, title=ui_text(ui_language, "preview"), border_style="green"))
+    console.print(
+        f"[bold green]✅ {_help_text(prepared.ui_language, 'artifacts_written')}[/] "
+        f"{result.artifacts.run_dir}"
+    )
+    preview = result.report[:800] + "\n..." if len(result.report) > 800 else result.report
+    console.print(Panel(preview, title=ui_text(prepared.ui_language, "preview"), border_style="green"))
 
 
 def main() -> None:

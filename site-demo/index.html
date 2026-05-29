@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OpenBusiness GUI Demo</title>
+    <meta
+      name="description"
+      content="Interactive OpenBusiness GUI demo for evidence-labeled business model analysis."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="cursor-light" aria-hidden="true"></div>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup" aria-label="OpenBusiness">
+          <div class="brand-mark">OB</div>
+          <div>
+            <h1>OpenBusiness</h1>
+            <p>Business model research cockpit</p>
+          </div>
+        </div>
+        <div class="run-meta" aria-label="Run metadata">
+          <span class="pill verified">verified</span>
+          <span class="pill inferred">inferred</span>
+          <span class="pill missing">missing</span>
+        </div>
+        <div class="top-actions">
+          <button class="icon-button" id="resetDemo" type="button" aria-label="Reset demo">
+            <i data-lucide="rotate-ccw"></i>
+          </button>
+          <button class="primary-action" id="runDemo" type="button">
+            <i data-lucide="play"></i>
+            <span>Run analysis</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="workspace" aria-label="OpenBusiness demo workspace">
+        <aside class="control-rail">
+          <div class="section-title">
+            <span>Target</span>
+            <strong id="runStatus">Ready</strong>
+          </div>
+
+          <label class="field">
+            <span>Company</span>
+            <input id="companyInput" value="Vercel" />
+          </label>
+
+          <label class="field">
+            <span>Domain</span>
+            <input id="domainInput" value="vercel.com" />
+          </label>
+
+          <label class="field">
+            <span>Analysis pack</span>
+            <select id="packSelect">
+              <option value="saas" selected>SaaS</option>
+              <option value="ai-infra">AI Infrastructure</option>
+              <option value="public-company">Public Company</option>
+              <option value="consumer-app">Consumer App</option>
+              <option value="ecommerce">Ecommerce</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Report template</span>
+            <select id="templateSelect">
+              <option value="investor-memo" selected>Investor Memo</option>
+              <option value="founder-copycat">Founder Copycat</option>
+              <option value="competitor-map">Competitor Map</option>
+              <option value="standard">Standard</option>
+            </select>
+          </label>
+
+          <div class="evidence-meter" aria-label="Evidence mix">
+            <div class="meter-row">
+              <span>Verified</span>
+              <strong id="verifiedCount">0</strong>
+            </div>
+            <div class="meter-track">
+              <span class="meter-fill verified-fill" id="verifiedFill"></span>
+            </div>
+            <div class="meter-row">
+              <span>Inferred</span>
+              <strong id="inferredCount">0</strong>
+            </div>
+            <div class="meter-track">
+              <span class="meter-fill inferred-fill" id="inferredFill"></span>
+            </div>
+            <div class="meter-row">
+              <span>Missing</span>
+              <strong id="missingCount">0</strong>
+            </div>
+            <div class="meter-track">
+              <span class="meter-fill missing-fill" id="missingFill"></span>
+            </div>
+          </div>
+
+          <div class="artifact-list">
+            <div class="section-title">
+              <span>Artifacts</span>
+              <strong>9 stages</strong>
+            </div>
+            <button class="artifact-item active" type="button" data-tab="report">
+              <i data-lucide="file-text"></i>
+              <span>report.en.md</span>
+            </button>
+            <button class="artifact-item" type="button" data-tab="sources">
+              <i data-lucide="link"></i>
+              <span>sources.md</span>
+            </button>
+            <button class="artifact-item" type="button" data-tab="run">
+              <i data-lucide="braces"></i>
+              <span>run.json</span>
+            </button>
+          </div>
+        </aside>
+
+        <section class="main-stage">
+          <div class="pipeline-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">LangGraph pipeline</span>
+                <h2>Evidence before interpretation</h2>
+              </div>
+              <span class="live-chip" id="activeStage">idle</span>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <span id="pipelineProgress"></span>
+            </div>
+            <ol class="pipeline-list" id="pipelineList">
+              <li data-stage="Evidence Collector">
+                <span class="stage-index">01</span>
+                <div>
+                  <strong>Evidence Collector</strong>
+                  <small>Tavily, Firecrawl, SEC EDGAR</small>
+                </div>
+                <span class="stage-state">queued</span>
+              </li>
+              <li data-stage="JTBD Analyst">
+                <span class="stage-index">02</span>
+                <div>
+                  <strong>JTBD Analyst</strong>
+                  <small>buyer, user, switching trigger</small>
+                </div>
+                <span class="stage-state">queued</span>
+              </li>
+              <li data-stage="Value Proposition">
+                <span class="stage-index">03</span>
+                <div>
+                  <strong>Value Proposition</strong>
+                  <small>10x better test</small>
+                </div>
+                <span class="stage-state">queued</span>
+              </li>
+              <li data-stage="GTM Analyst">
+                <span class="stage-index">04</span>
+                <div>
+                  <strong>GTM Analyst</strong>
+                  <small>PLG, sales-led, community</small>
+                </div>
+                <span class="stage-state">queued</span>
+              </li>
+              <li data-stage="Unit Economics">
+                <span class="stage-index">05</span>
+                <div>
+                  <strong>Unit Economics</strong>
+                  <small>LTV/CAC, margin, sensitivity</small>
+                </div>
+                <span class="stage-state">queued</span>
+              </li>
+              <li data-stage="Moat Analyst">
+                <span class="stage-index">06</span>
+                <div>
+                  <strong>Moat Analyst</strong>
+                  <small>switching costs and ecosystem</small>
+                </div>
+                <span class="stage-state">queued</span>
+              </li>
+              <li data-stage="Synthesizer">
+                <span class="stage-index">07</span>
+                <div>
+                  <strong>Synthesizer</strong>
+                  <small>business model canvas</small>
+                </div>
+                <span class="stage-state">queued</span>
+              </li>
+              <li data-stage="Stress Tester">
+                <span class="stage-index">08</span>
+                <div>
+                  <strong>Stress Tester</strong>
+                  <small>fatal assumptions</small>
+                </div>
+                <span class="stage-state">queued</span>
+              </li>
+              <li data-stage="Finalizer">
+                <span class="stage-index">09</span>
+                <div>
+                  <strong>Finalizer</strong>
+                  <small>pure markdown report</small>
+                </div>
+                <span class="stage-state">queued</span>
+              </li>
+            </ol>
+          </div>
+
+          <div class="insight-strip" aria-label="Verdict highlights">
+            <article class="metric-tile">
+              <span>Market type</span>
+              <strong id="marketType">B2B Developer Platform</strong>
+            </article>
+            <article class="metric-tile">
+              <span>Funding stage</span>
+              <strong id="fundingStage">Series C+</strong>
+            </article>
+            <article class="metric-tile">
+              <span>Moat verdict</span>
+              <strong id="moatVerdict">Moderate</strong>
+            </article>
+            <article class="metric-tile">
+              <span>Outlook</span>
+              <strong id="outlookVerdict">Positive</strong>
+            </article>
+          </div>
+        </section>
+
+        <aside class="report-pane">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">Report preview</span>
+              <h2 id="reportTitle">Vercel business model</h2>
+            </div>
+            <span class="confidence">Plausible</span>
+          </div>
+
+          <div class="tab-panel active" id="tab-report">
+            <div class="verdict-card">
+              <div class="verdict-row verified-row">
+                <span>[VERIFIED]</span>
+                <p>Pricing and enterprise plan signals are source-backed.</p>
+              </div>
+              <div class="verdict-row inferred-row">
+                <span>[INFERRED]</span>
+                <p>Expansion likely depends on team and platform adoption.</p>
+              </div>
+              <div class="verdict-row missing-row">
+                <span>[MISSING]</span>
+                <p>Net retention, CAC, and exact gross margin are private.</p>
+              </div>
+            </div>
+
+            <div class="canvas-grid">
+              <div>
+                <span>Customer</span>
+                <strong>Engineering teams, startups, enterprises</strong>
+              </div>
+              <div>
+                <span>Buyer</span>
+                <strong>CTO, VP Eng, platform owner</strong>
+              </div>
+              <div>
+                <span>Revenue</span>
+                <strong>Subscription + usage expansion</strong>
+              </div>
+              <div>
+                <span>Risk</span>
+                <strong>Cloud and framework dependency</strong>
+              </div>
+            </div>
+
+            <img
+              class="report-image"
+              src="../docs/assets/openbusiness-report-preview.svg"
+              alt="OpenBusiness report preview"
+            />
+          </div>
+
+          <div class="tab-panel" id="tab-sources">
+            <div class="source-list">
+              <div class="source-item">
+                <span>[VERIFIED:vercel.com/pricing]</span>
+                <p>Plans, usage gates, and enterprise CTA.</p>
+              </div>
+              <div class="source-item">
+                <span>[VERIFIED:vercel.com/customers]</span>
+                <p>Customer proof for developer and enterprise adoption.</p>
+              </div>
+              <div class="source-item">
+                <span>[VERIFIED:press]</span>
+                <p>Funding, product launches, and platform positioning.</p>
+              </div>
+            </div>
+            <img
+              class="report-image compact"
+              src="../docs/assets/openbusiness-terminal-demo.svg"
+              alt="OpenBusiness terminal pipeline preview"
+            />
+          </div>
+
+          <div class="tab-panel" id="tab-run">
+            <pre class="json-preview"><code>{
+  "analysis_pack": "saas",
+  "report_template": "investor-memo",
+  "claim_contract": ["VERIFIED", "INFERRED", "MISSING"],
+  "artifacts": {
+    "report": "report.en.md",
+    "sources": "sources.md",
+    "stages": 9
+  }
+}</code></pre>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

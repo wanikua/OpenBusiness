@@ -10,6 +10,16 @@ The most useful extension types are:
 - evidence tools
 - improved analyst prompts
 
+Core seams to preserve:
+
+- `openbusiness.claims`: the Claim Contract for verified, inferred, and missing claims
+- `openbusiness.stages`: the Stage Catalog for graph order, state keys, labels, and artifact names
+- `openbusiness.analysis_run`: the Analysis Run interface used by the CLI adapter
+- `openbusiness.artifacts`: reproducible run artifact writing
+- `openbusiness.profiles`: the Profile Registry for pack and template validation
+- `openbusiness.evidence`: structured Evidence Result helpers for tools
+- `openbusiness.llm_clients.factory`: Provider Adapter selection for model clients
+
 ## Evidence Label Contract
 
 Every extension must preserve the core evidence labels:
@@ -125,6 +135,7 @@ Before opening a pull request:
 ```bash
 python -m ruff check openbusiness
 python -m compileall openbusiness
+python -m pytest
 bash -n install.sh
 python -m openbusiness.cli packs
 python -m openbusiness.cli templates

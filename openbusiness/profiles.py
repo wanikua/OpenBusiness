@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from importlib import resources
 from pathlib import Path
+from typing import Any
 
 try:
     import tomllib  # Python 3.11+
@@ -52,75 +53,137 @@ class ReportTemplate:
         )
 
 
-def _resource_files(directory: str, suffix: str) -> list[Path]:
-    base = resources.files("openbusiness.resources").joinpath(directory)
-    return sorted(path for path in base.iterdir() if path.name.endswith(suffix))
-
-
-def _load_toml(path: Path) -> dict:
+def _load_toml(path: Any) -> dict[str, Any]:
     with path.open("rb") as handle:
         return tomllib.load(handle)
-
-
-def _load_pack_file(path: Path) -> AnalysisPack:
-    data = _load_toml(path)
-    return AnalysisPack(
-        id=str(data["id"]),
-        name=str(data["name"]),
-        description=str(data["description"]),
-        evidence_focus=tuple(str(item) for item in data.get("evidence_focus", [])),
-        analyst_focus=tuple(str(item) for item in data.get("analyst_focus", [])),
-    )
-
-
-def list_analysis_packs() -> list[AnalysisPack]:
-    """Return packaged analysis packs."""
-    return [_load_pack_file(path) for path in _resource_files("packs", ".toml")]
-
-
-def load_analysis_pack(name: str = "general", file_path: str | None = None) -> AnalysisPack:
-    """Load an analysis pack by packaged id or custom TOML file path."""
-    if file_path:
-        return _load_pack_file(Path(file_path).expanduser())
-    normalized = name.strip().lower()
-    for pack in list_analysis_packs():
-        if normalized in {pack.id.lower(), pack.name.lower()}:
-            return pack
-    available = ", ".join(pack.id for pack in list_analysis_packs())
-    raise ValueError(f"Unknown analysis pack: {name!r}. Available packs: {available}.")
 
 
 def _split_template_frontmatter(raw: str) -> tuple[dict, str]:
     if not raw.startswith("+++\n"):
         raise ValueError("Template file must start with TOML front matter delimited by +++.")
-    _, rest = raw.split("+++\n", 1)
-    frontmatter, body = rest.split("+++\n", 1)
+    try:
+        _, rest = raw.split("+++\n", 1)
+        frontmatter, body = rest.split("+++\n", 1)
+    except ValueError as exc:
+        raise ValueError("Template file must close TOML front matter with +++.") from exc
     data = tomllib.loads(frontmatter)
     return data, body
 
 
-def _load_template_file(path: Path) -> ReportTemplate:
-    data, body = _split_template_frontmatter(path.read_text(encoding="utf-8"))
-    return ReportTemplate(
-        id=str(data["id"]),
-        name=str(data["name"]),
-        description=str(data["description"]),
-        body=body,
-    )
+def _path_label(path: Any) -> str:
+    return str(path)
+
+
+def _required_text(data: dict[str, Any], key: str, file_label: str) -> str:
+    value = data.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{file_label} must define non-empty {key!r}.")
+    return value.strip()
+
+
+def _required_text_items(data: dict[str, Any], key: str, file_label: str) -> tuple[str, ...]:
+    value = data.get(key)
+    if not isinstance(value, list | tuple):
+        raise ValueError(f"{file_label} must define {key!r} as a non-empty list.")
+    items = tuple(str(item).strip() for item in value if str(item).strip())
+    if not items:
+        raise ValueError(f"{file_label} must define {key!r} as a non-empty list.")
+    return items
+
+
+class ProfileRegistry:
+    """Loader and validator for built-in and custom profiles."""
+
+    def __init__(self, resource_package: str = "openbusiness.resources") -> None:
+        self.resource_package = resource_package
+
+    def _resource_files(self, directory: str, suffix: str) -> list[Any]:
+        base = resources.files(self.resource_package).joinpath(directory)
+        return sorted(path for path in base.iterdir() if path.name.endswith(suffix))
+
+    def load_pack_file(self, path: Any) -> AnalysisPack:
+        """Load and validate a TOML analysis pack."""
+        file_label = _path_label(path)
+        try:
+            data = _load_toml(path)
+        except FileNotFoundError as exc:
+            raise ValueError(f"Profile file not found: {file_label}.") from exc
+        return AnalysisPack(
+            id=_required_text(data, "id", file_label),
+            name=_required_text(data, "name", file_label),
+            description=_required_text(data, "description", file_label),
+            evidence_focus=_required_text_items(data, "evidence_focus", file_label),
+            analyst_focus=_required_text_items(data, "analyst_focus", file_label),
+        )
+
+    def list_analysis_packs(self) -> list[AnalysisPack]:
+        """Return packaged analysis packs."""
+        return [self.load_pack_file(path) for path in self._resource_files("packs", ".toml")]
+
+    def load_analysis_pack(self, name: str = "general", file_path: str | None = None) -> AnalysisPack:
+        """Load an analysis pack by packaged id or custom TOML file path."""
+        if file_path:
+            return self.load_pack_file(Path(file_path).expanduser())
+        normalized = name.strip().lower()
+        packs = self.list_analysis_packs()
+        for pack in packs:
+            if normalized in {pack.id.lower(), pack.name.lower()}:
+                return pack
+        available = ", ".join(pack.id for pack in packs)
+        raise ValueError(f"Unknown analysis pack: {name!r}. Available packs: {available}.")
+
+    def load_template_file(self, path: Any) -> ReportTemplate:
+        """Load and validate a Markdown report template."""
+        file_label = _path_label(path)
+        try:
+            data, body = _split_template_frontmatter(path.read_text(encoding="utf-8"))
+        except FileNotFoundError as exc:
+            raise ValueError(f"Profile file not found: {file_label}.") from exc
+        body = body.strip()
+        if not body:
+            raise ValueError(f"{file_label} must define a non-empty template body.")
+        return ReportTemplate(
+            id=_required_text(data, "id", file_label),
+            name=_required_text(data, "name", file_label),
+            description=_required_text(data, "description", file_label),
+            body=body,
+        )
+
+    def list_report_templates(self) -> list[ReportTemplate]:
+        """Return packaged report templates."""
+        return [self.load_template_file(path) for path in self._resource_files("templates", ".md")]
+
+    def load_report_template(self, name: str = "standard", file_path: str | None = None) -> ReportTemplate:
+        """Load a report template by packaged id or custom Markdown file path."""
+        if file_path:
+            return self.load_template_file(Path(file_path).expanduser())
+        normalized = name.strip().lower()
+        templates = self.list_report_templates()
+        for template in templates:
+            if normalized in {template.id.lower(), template.name.lower()}:
+                return template
+        available = ", ".join(template.id for template in templates)
+        raise ValueError(f"Unknown report template: {name!r}. Available templates: {available}.")
+
+
+DEFAULT_PROFILE_REGISTRY = ProfileRegistry()
+
+
+def list_analysis_packs() -> list[AnalysisPack]:
+    """Return packaged analysis packs."""
+    return DEFAULT_PROFILE_REGISTRY.list_analysis_packs()
+
+
+def load_analysis_pack(name: str = "general", file_path: str | None = None) -> AnalysisPack:
+    """Load an analysis pack by packaged id or custom TOML file path."""
+    return DEFAULT_PROFILE_REGISTRY.load_analysis_pack(name, file_path)
 
 
 def list_report_templates() -> list[ReportTemplate]:
     """Return packaged report templates."""
-    return [_load_template_file(path) for path in _resource_files("templates", ".md")]
+    return DEFAULT_PROFILE_REGISTRY.list_report_templates()
 
 
 def load_report_template(name: str = "standard", file_path: str | None = None) -> ReportTemplate:
     """Load a report template by packaged id or custom Markdown file path."""
-    if file_path:
-        return _load_template_file(Path(file_path).expanduser())
-    normalized = name.strip().lower()
-    for template in list_report_templates():
-        if normalized in {template.id.lower(), template.name.lower()}:
-            return template
-    available = ", ".join(template.id for template in list_report_templates())
-    raise ValueError(f"Unknown report template: {name!r}. Available templates: {available}.")
+    return DEFAULT_PROFILE_REGISTRY.load_report_template(name, file_path)

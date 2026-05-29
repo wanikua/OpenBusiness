@@ -29,6 +29,18 @@ buy/sell vote.
 
 ![OpenBusiness report preview](docs/assets/openbusiness-report-preview.svg)
 
+## GUI Demo
+
+A static website GUI demo is available in [`site-demo/`](site-demo/). It shows
+the analysis cockpit, evidence-label counters, LangGraph pipeline, report
+preview, sources, and run artifacts with GSAP animations.
+
+Open it directly:
+
+```bash
+open site-demo/index.html
+```
+
 ## Highlights
 
 - Multi-agent business analysis pipeline built with LangGraph.

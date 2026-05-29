@@ -25,19 +25,10 @@ from openbusiness.agents.analysts import (
 )
 from openbusiness.agents.utils.agent_state import AgentState
 from openbusiness.llm_clients.factory import get_llm
+from openbusiness.stages import graph_stage_pairs
 
 
-PIPELINE_STAGES = [
-    ("evidence_collector", "🔍 Evidence Collector"),
-    ("jtbd_analyst", "👥 Customer / JTBD Analyst"),
-    ("value_prop_analyst", "💎 Value Proposition Analyst"),
-    ("gtm_analyst", "🚀 Go-To-Market Analyst"),
-    ("unit_econ_analyst", "💰 Unit Economics Analyst"),
-    ("moat_analyst", "🛡️ Moat & Competition Analyst"),
-    ("synthesizer", "🧱 Business Model Synthesizer"),
-    ("stress_tester", "🔬 Assumption Stress Tester"),
-    ("finalizer", "📝 Report Finalizer"),
-]
+PIPELINE_STAGES = graph_stage_pairs()
 
 
 def build_graph(analysis_depth: str = "standard"):

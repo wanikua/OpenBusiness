@@ -3,19 +3,7 @@
 from __future__ import annotations
 
 from openbusiness.agents.utils.agent_state import AgentState
-
-
-EVIDENCE_LABEL_DISCIPLINE = """\
-# Evidence Label Discipline
-This is a core OpenBusiness product principle: know what is known, infer only
-when the evidence supports it, and explicitly mark what is unknown.
-
-- Preserve `[VERIFIED:url]` only for claims directly supported by source evidence.
-- Use `[INFERRED]` for reasoned conclusions that depend on evidence but lack a direct citation.
-- Use `[MISSING]` when important data is absent, unavailable, private, or not collected.
-- Never let an analysis pack or report template remove, soften, or hide these labels.
-- Do not upgrade `[INFERRED]` or `[MISSING]` claims into verified facts during synthesis.
-"""
+from openbusiness.claims import EVIDENCE_LABEL_DISCIPLINE
 
 
 def analysis_context_block(state: AgentState) -> str:

@@ -33,10 +33,13 @@ jobs:
           python -m pip install -e ".[dev]"
 
       - name: Lint
-        run: python -m ruff check openbusiness
+        run: python -m ruff check openbusiness tests
 
       - name: Compile
         run: python -m compileall openbusiness
+
+      - name: Test
+        run: python -m pytest
 
       - name: Validate installer shell syntax
         run: bash -n install.sh

@@ -6,12 +6,13 @@ Every snippet returned is tagged with its source URL for verification downstream
 
 from __future__ import annotations
 
-import json
 import os
 from typing import Optional
 
 import requests
 from langchain_core.tools import tool
+
+from openbusiness.evidence import error_result, missing_result, source_tag, verified_result
 
 
 def _tavily_key() -> Optional[str]:
@@ -40,13 +41,11 @@ def tavily_search(query: str, max_results: int = 5, search_depth: str = "basic")
     """
     key = _tavily_key()
     if not key:
-        return json.dumps(
-            {
-                "warning": "TAVILY_API_KEY not set",
-                "fallback_action": "Caller should rely on [INFERRED] LLM knowledge and label clearly",
-                "results": [],
-            },
-            ensure_ascii=False,
+        return missing_result(
+            "tavily_search",
+            "TAVILY_API_KEY not set",
+            "Caller should rely on [INFERRED] LLM knowledge and label clearly.",
+            results=[],
         )
 
     try:
@@ -63,13 +62,13 @@ def tavily_search(query: str, max_results: int = 5, search_depth: str = "basic")
                 "title": r.get("title", ""),
                 "url": r.get("url", ""),
                 "content": r.get("content", "")[:900],
-                "source_tag": f"[VERIFIED:{r.get('url', '')}]",
+                "source_tag": source_tag(r.get("url", "")),
             }
             for r in data.get("results", [])
         ]
-        return json.dumps({"query": query, "results": results}, ensure_ascii=False)
+        return verified_result("tavily_search", query=query, results=results)
     except Exception as e:
-        return json.dumps({"error": str(e), "results": []}, ensure_ascii=False)
+        return error_result("tavily_search", str(e), query=query, results=[])
 
 
 @tool
@@ -87,14 +86,12 @@ def firecrawl_scrape(url: str) -> str:
     """
     key = _firecrawl_key()
     if not key:
-        return json.dumps(
-            {
-                "warning": "FIRECRAWL_API_KEY not set",
-                "fallback_action": "Caller should note this URL was not fetched and tag insights [INFERRED]",
-                "url": url,
-                "content": "",
-            },
-            ensure_ascii=False,
+        return missing_result(
+            "firecrawl_scrape",
+            "FIRECRAWL_API_KEY not set",
+            "Caller should note this URL was not fetched and tag insights [INFERRED].",
+            url=url,
+            content="",
         )
 
     try:
@@ -107,12 +104,9 @@ def firecrawl_scrape(url: str) -> str:
         resp.raise_for_status()
         data = resp.json()
         markdown = data.get("data", {}).get("markdown", "")[:12000]
-        return json.dumps(
-            {"url": url, "source_tag": f"[VERIFIED:{url}]", "content": markdown},
-            ensure_ascii=False,
-        )
+        return verified_result("firecrawl_scrape", url=url, source_tag=source_tag(url), content=markdown)
     except Exception as e:
-        return json.dumps({"error": str(e), "url": url, "content": ""}, ensure_ascii=False)
+        return error_result("firecrawl_scrape", str(e), url=url, content="")
 
 
 @tool
@@ -129,7 +123,12 @@ def sec_edgar_company_facts(ticker: str) -> str:
         JSON with CIK, latest revenue, recent filings, source tag.
     """
     if not ticker:
-        return json.dumps({"warning": "No ticker — private company; use tavily_search instead", "results": []})
+        return missing_result(
+            "sec_edgar_company_facts",
+            "No ticker - private company; use tavily_search instead.",
+            "Use tavily_search for private-company evidence.",
+            results=[],
+        )
 
     try:
         ticker = ticker.upper()
@@ -146,7 +145,13 @@ def sec_edgar_company_facts(ticker: str) -> str:
                 cik = str(entry["cik_str"]).zfill(10)
                 break
         if not cik:
-            return json.dumps({"warning": f"Ticker {ticker} not found in SEC EDGAR", "results": []})
+            return missing_result(
+                "sec_edgar_company_facts",
+                f"Ticker {ticker} not found in SEC EDGAR.",
+                "Use tavily_search for non-US-listed or private-company evidence.",
+                ticker=ticker,
+                results=[],
+            )
 
         # Pull company facts
         facts_resp = requests.get(
@@ -169,15 +174,14 @@ def sec_edgar_company_facts(ticker: str) -> str:
         except KeyError:
             pass
 
-        return json.dumps(
-            {
-                "ticker": ticker,
-                "cik": cik,
-                "company_name": facts.get("entityName", ""),
-                "source_tag": f"[VERIFIED:https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}]",
-                "recent_annual_revenue": revenue_data,
-            },
-            ensure_ascii=False,
+        source_url = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}"
+        return verified_result(
+            "sec_edgar_company_facts",
+            ticker=ticker,
+            cik=cik,
+            company_name=facts.get("entityName", ""),
+            source_tag=source_tag(source_url),
+            recent_annual_revenue=revenue_data,
         )
     except Exception as e:
-        return json.dumps({"error": str(e), "ticker": ticker, "results": []}, ensure_ascii=False)
+        return error_result("sec_edgar_company_facts", str(e), ticker=ticker, results=[])
