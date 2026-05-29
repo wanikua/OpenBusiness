@@ -238,3 +238,46 @@ openbusiness analyze "Notion" --domain notion.so --language en
   assumptions need validation.
 - Ask for report-quality feedback, not only stars.
 - Convert repeated feedback into issues so the project visibly improves.
+
+## Channel Tracker
+
+Single ledger of where OpenBusiness has been / can be promoted. Ready-to-post
+copy lives in `promo/` (`READY-TO-POST.md` is the copy/paste packet;
+`blog-devto.md` and `directories-newsletters.md` cover content and submissions).
+
+### Done
+
+- [x] PyPI release `openbusiness` 0.1.0 (+ enriched `pyproject.toml` metadata for next release)
+- [x] GitHub topics, description, homepage
+- [x] `examples/` real Notion sample report committed
+- [x] `good first issue` opened (contributors: packs / templates)
+- [x] awesome list PR — vonzosten/awesome-LangGraph
+- [x] awesome list PR — e2b-dev/awesome-ai-agents
+- [x] awesome list PR — Jenqyang/Awesome-AI-Agents
+
+### Ready (copy prepared, needs you to post from your account)
+
+- [ ] Show HN — `promo/READY-TO-POST.md` §5 (plain-text variant)
+- [ ] X / Twitter thread — `promo/READY-TO-POST.md` §1 (+ 2 PNG attachments)
+- [ ] Reddit r/SideProject, r/Entrepreneur, r/LocalLLaMA — §2–4
+- [ ] Product Hunt — `promo/product-hunt.md` / §6
+- [ ] LinkedIn — template above (Post Templates → LinkedIn)
+- [ ] Dev.to / Hashnode / Medium blog — `promo/blog-devto.md`
+- [ ] AI directories (There's An AI For That, Futurepedia, AI Agents Directory) — `promo/directories-newsletters.md`
+- [ ] Newsletters (TLDR AI, Ben's Bites, Latent Space, Python Weekly) — `promo/directories-newsletters.md`
+- [ ] More subreddits: r/Python, r/opensource, r/commandline, r/LangChain, r/AI_Agents
+- [ ] Mastodon (fosstodon) / Bluesky
+- [ ] AlternativeTo / StackShare / SaaSHub listings
+
+### Hold until traction (~tens of stars)
+
+- [ ] awesome list — kyrolabs/awesome-langchain (auto-closes brand-new repos)
+- [ ] GitHub Trending (needs star velocity)
+- [ ] Lobsters (invite-only)
+
+### Not applicable / declined
+
+- Shubhamsaboo/awesome-llm-apps — a code-example monorepo, not a links list
+- agarrharr/awesome-cli-apps — general CLI utilities, off-topic for a niche AI tool
+- slavakurilyak/awesome-ai-agents — machine-generated snapshot, not a live PR list
+- YC Launch HN / Startup School — YC-funded companies only

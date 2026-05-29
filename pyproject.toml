@@ -7,13 +7,21 @@ license = "MIT"
 requires-python = ">=3.10"
 keywords = [
     "ai agents",
+    "anthropic",
     "business model",
     "business model canvas",
+    "company research",
     "competitive analysis",
+    "deepseek",
+    "due diligence",
     "evidence research",
     "go-to-market",
     "langgraph",
+    "llm",
     "market research",
+    "moat analysis",
+    "openai",
+    "sec edgar",
     "startup analysis",
     "unit economics",
 ]
@@ -23,14 +31,18 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Financial and Insurance Industry",
     "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
     "Natural Language :: English",
     "Natural Language :: Chinese (Simplified)",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Office/Business",
+    "Topic :: Office/Business :: Financial",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 dependencies = [
     "langgraph>=0.4.0",
@@ -49,6 +61,8 @@ dev = ["pytest", "ruff"]
 [project.urls]
 Homepage = "https://github.com/wanikua/OpenBusiness"
 Repository = "https://github.com/wanikua/OpenBusiness"
+Documentation = "https://github.com/wanikua/OpenBusiness#readme"
+"Sample Reports" = "https://github.com/wanikua/OpenBusiness/tree/master/examples"
 Issues = "https://github.com/wanikua/OpenBusiness/issues"
 
 [project.scripts]
