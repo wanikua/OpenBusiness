@@ -46,7 +46,7 @@ openbusiness config
 openbusiness analyze "Notion" --domain notion.so
 ```
 
-MIT licensed. Sample reports for Notion, Vercel, and OpenAI are in `output/` if you want to read them before installing.
+MIT licensed. The full Notion sample report is in [`examples/`](https://github.com/wanikua/OpenBusiness/tree/master/examples) if you want to read it before installing.
 
 → https://github.com/wanikua/OpenBusiness
 

@@ -32,7 +32,7 @@ Providers: OpenAI, Anthropic, and DeepSeek. Tavily and Firecrawl are optional, b
 
 Limitations: it cannot verify private-company financials when the company does not publish them, so private companies get more 🟡/🔴 tags. Reports take 2–4 minutes. Quality depends heavily on the evidence available.
 
-Sample reports for Notion, Vercel, and OpenAI are in `output/` if you want to read before installing.
+The full Notion sample report is in `examples/` if you want to read before installing.
 
 `pipx install openbusiness && openbusiness config`
 

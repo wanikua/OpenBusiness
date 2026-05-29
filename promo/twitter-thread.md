@@ -103,7 +103,7 @@ Bring your own OpenAI, Anthropic, or DeepSeek key. Tavily + Firecrawl are option
 ---
 
 **9/**
-Sample reports already in the repo for Notion, Vercel, OpenAI.
+The full Notion sample report is in the repo (examples/).
 
 Clone, run a first-pass report from public evidence, and tell me which assumption changed the story.
 

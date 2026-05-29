@@ -27,7 +27,7 @@ It's a 9-agent linear pipeline: evidence collector → JTBD → value prop → G
 **What's working:**
 
 - The 🟢/🟡/🔴 tag convention. Models follow it much better when the prompt includes mixed examples.
-- Unit economics done in Python, not LLM. The analyst populates inputs with tags and a `unit_econ.py` function does the math.
+- Unit economics done in Python, not LLM. The analyst populates inputs with tags and a `financial_tools.py` function (`calculate_unit_economics`) does the math.
 - Two-tier model routing — mini/haiku for analysts, stronger model for the synthesizer. Cost dropped to ~$0.10–$0.40/report.
 
 **What's not working yet:**
@@ -36,7 +36,7 @@ It's a 9-agent linear pipeline: evidence collector → JTBD → value prop → G
 - HTML report with collapsible evidence trails. Markdown is fine but the evidence trail bloats the report.
 - Private companies still produce thin reports. Without SEC filings, you're stuck inferring most of the unit economics.
 
-Repo (MIT, samples in `output/`): https://github.com/wanikua/OpenBusiness
+Repo (MIT, full Notion sample report in `examples/`): https://github.com/wanikua/OpenBusiness
 
 Install:
 ```

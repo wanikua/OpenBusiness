@@ -53,7 +53,7 @@ Model notes from spot checks:
 
 **3. Pure-math tools beat LLM calculation.**
 
-Unit economics (LTV, CAC, breakeven, lifetime months) is a Python function, not an LLM call. The analyst's job is to populate inputs *with tags* — "monthly_churn: 0.04 [INFERRED]", "arpu: 12.00 [VERIFIED:notion.so/pricing]" — and then `unit_econ_calc(...)` does the multiplication.
+Unit economics (LTV, CAC, breakeven, lifetime months) is a Python function, not an LLM call. The analyst's job is to populate inputs *with tags* — "monthly_churn: 0.04 [INFERRED]", "arpu: 12.00 [VERIFIED:notion.so/pricing]" — and then `calculate_unit_economics(...)` does the multiplication.
 
 The tag on each input propagates to the output: "LTV: $240 [VERIFIED:calculation — $12 × 25 × 0.80]".
 
@@ -76,7 +76,7 @@ Two benefits: (a) reproducibility — same evidence pack → same report; (b) co
 
 - LangGraph for the pipeline wiring
 - OpenAI, Anthropic, or DeepSeek via config/env var
-- Tavily / Firecrawl / SEC EDGAR adapters in `openbusiness/dataflows/`
+- Tavily / Firecrawl / SEC EDGAR tools in `openbusiness/tools/`
 - Rich for the CLI UX
 
 **Tried but discarded:**
@@ -98,6 +98,6 @@ openbusiness config
 openbusiness analyze "Notion" --domain notion.so
 ```
 
-Sample reports in `output/`. MIT.
+Full Notion sample report in `examples/`. MIT.
 
 Happy to dig into the prompts or the LangGraph wiring in comments — and especially interested if anyone has gotten the tag convention to hold on 7B-class models.

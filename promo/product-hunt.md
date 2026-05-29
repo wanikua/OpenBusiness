@@ -30,7 +30,7 @@
 >
 > OpenBusiness is a 9-agent CLI that gathers public evidence, builds a business model canvas, runs unit economics in Python, and tags claims as 🟢 verified, 🟡 inferred, or 🔴 missing. It supports OpenAI, Anthropic, and DeepSeek.
 >
-> Free, MIT, sample reports for Notion / Vercel / OpenAI in the repo. I would especially value feedback on where the report still over-infers from thin evidence.
+> Free, MIT, full Notion sample report in the repo (examples/). I would especially value feedback on where the report still over-infers from thin evidence.
 
 ---
 
@@ -54,7 +54,7 @@
 >
 > The Notion sample modeled LTV/CAC at 1.6x, then showed how one churn assumption could push it to 1.07x or 3.2x. The product turns public evidence into a first-pass business model report and tags claims 🟢 verified / 🟡 inferred / 🔴 missing.
 >
-> It is built for founders, strategists, and investors who want a structured report without made-up ARPU or churn numbers. MIT, samples for Notion + Vercel + OpenAI in the repo.
+> It is built for founders, strategists, and investors who want a structured report without made-up ARPU or churn numbers. MIT, full Notion sample report in the repo (examples/).
 >
 > Would you be open to hunting it? Repo: https://github.com/wanikua/OpenBusiness — happy to send the assets and draft post.
 
